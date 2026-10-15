@@ -1,0 +1,770 @@
+[
+  {
+    "id": "posable-snap-fit-mecha",
+    "name": "Posable Snap-Fit Mecha / Dummy Action Figure",
+    "slug": "posable-snap-fit-mecha",
+    "category": "Articulated Action Figures",
+    "categoryId": "action-figures",
+    "trendingRank": 1,
+    "isTrending": true,
+    "priceINR": 399,
+    "price": 399,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 145,
+      "y": 95,
+      "z": 35
+    },
+    "dimensions": {
+      "x": 145,
+      "y": 95,
+      "z": 35
+    },
+    "dimensionsDisplay": "145 × 95 × 35 mm",
+    "weightGrams": 65,
+    "estimatedWeightGrams": 65,
+    "printTimeHours": 4.5,
+    "assemblyType": "multi-part",
+    "partsCount": 8,
+    "defaultColors": {
+      "primary": "#FF6500",
+      "accent": "#D4D8E0"
+    },
+    "stlUrl": "/models/posable-snap-fit-mecha.stl",
+    "modelUrl": "/models/posable-snap-fit-mecha.stl",
+    "accentStlUrl": "/models/posable-snap-fit-mecha-accent.stl",
+    "multiPart": {
+      "base": "/models/posable-snap-fit-mecha-base.stl",
+      "accent": "/models/posable-snap-fit-mecha-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "LEGO-style ball-jointed inner skeleton",
+      "Snap-on armor plates printed on separate plate",
+      "Zero AMS purge waste dual-color assembly",
+      "Fully posable with 14 articulation points"
+    ],
+    "metaDescription": "LEGO-style ball-jointed inner skeleton printed in Charcoal/Black PLA+ with snap-on armor plates. Zero AMS purge waste.",
+    "image": "/images/products/posable-snap-fit-mecha.svg",
+    "assemblyLabel": "Snap-Fit Multi-Color (No AMS - Press Together)",
+    "canExplode": true,
+    "partCount": 8
+  },
+  {
+    "id": "articulated-crystal-dragon",
+    "name": "Articulated Flexi Crystal Dragon / Desk Toy",
+    "slug": "articulated-crystal-dragon",
+    "category": "Fidget & Kinetic Toys",
+    "categoryId": "toys",
+    "trendingRank": 2,
+    "isTrending": true,
+    "priceINR": 349,
+    "price": 349,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 165,
+      "y": 150,
+      "z": 28
+    },
+    "dimensions": {
+      "x": 165,
+      "y": 150,
+      "z": 28
+    },
+    "dimensionsDisplay": "165 × 150 × 28 mm",
+    "weightGrams": 58,
+    "estimatedWeightGrams": 58,
+    "printTimeHours": 3.8,
+    "assemblyType": "print-in-place",
+    "partsCount": 1,
+    "defaultColors": {
+      "primary": "#00FF66",
+      "accent": "#00E5FF"
+    },
+    "stlUrl": "/models/articulated-crystal-dragon.stl",
+    "modelUrl": "/models/articulated-crystal-dragon.stl",
+    "material": "PLA+",
+    "features": [
+      "Print-in-place articulated interlocking segments",
+      "Moves dynamically straight off the 180×180mm build plate",
+      "Gemstone faceted crystal back ridges",
+      "Smooth tactile fidget flexibility"
+    ],
+    "metaDescription": "Print-in-place articulated segments that curl and move right off the 180×180mm build plate with gemstone facets.",
+    "image": "/images/products/articulated-crystal-dragon.svg",
+    "assemblyLabel": "Print-in-Place (Single Color)",
+    "canExplode": false,
+    "partCount": 1
+  },
+  {
+    "id": "modular-gridfinity-2x3-desk-organizer",
+    "name": "Modular Gridfinity 2x3 Desk & SD/USB Organizer",
+    "slug": "modular-gridfinity-2x3-desk-organizer",
+    "category": "Modular Workshop & Desk Storage",
+    "categoryId": "workspace",
+    "trendingRank": 3,
+    "isTrending": true,
+    "priceINR": 499,
+    "price": 499,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 126,
+      "y": 84,
+      "z": 45
+    },
+    "dimensions": {
+      "x": 126,
+      "y": 84,
+      "z": 45
+    },
+    "dimensionsDisplay": "126 × 84 × 45 mm",
+    "weightGrams": 95,
+    "estimatedWeightGrams": 95,
+    "printTimeHours": 5.2,
+    "assemblyType": "multi-part",
+    "partsCount": 4,
+    "defaultColors": {
+      "primary": "#FFD700",
+      "accent": "#2B313D"
+    },
+    "stlUrl": "/models/modular-gridfinity-2x3-desk-organizer.stl",
+    "modelUrl": "/models/modular-gridfinity-2x3-desk-organizer.stl",
+    "accentStlUrl": "/models/modular-gridfinity-2x3-desk-organizer-accent.stl",
+    "multiPart": {
+      "base": "/models/modular-gridfinity-2x3-desk-organizer-base.stl",
+      "accent": "/models/modular-gridfinity-2x3-desk-organizer-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "Standard Zack Freedman 42mm Gridfinity 2x3 base",
+      "Dedicated slots for 8 SD cards and 6 USB-A drives",
+      "Color-coded removable sorting bins",
+      "Integrated 6x2mm magnet mounting recesses"
+    ],
+    "metaDescription": "Snap-fit magnetic/press-fit base grid with color-coded removable storage bins printed separately for SD/USB desk gear.",
+    "image": "/images/products/modular-gridfinity-2x3-desk-organizer.svg",
+    "assemblyLabel": "Snap-Fit Multi-Color (No AMS - Press Together)",
+    "canExplode": true,
+    "partCount": 4
+  },
+  {
+    "id": "dual-tone-geometric-planter",
+    "name": "Dual-Tone Geometric Self-Watering Planter",
+    "slug": "dual-tone-geometric-planter",
+    "category": "Botanical & Home Goods",
+    "categoryId": "botanical",
+    "trendingRank": 4,
+    "isTrending": true,
+    "priceINR": 549,
+    "price": 549,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 130,
+      "y": 130,
+      "z": 125
+    },
+    "dimensions": {
+      "x": 130,
+      "y": 130,
+      "z": 125
+    },
+    "dimensionsDisplay": "130 × 130 × 125 mm",
+    "weightGrams": 140,
+    "estimatedWeightGrams": 140,
+    "printTimeHours": 6.5,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#F3F4F6",
+      "accent": "#00FF66"
+    },
+    "stlUrl": "/models/dual-tone-geometric-planter.stl",
+    "modelUrl": "/models/dual-tone-geometric-planter.stl",
+    "accentStlUrl": "/models/dual-tone-geometric-planter-accent.stl",
+    "multiPart": {
+      "base": "/models/dual-tone-geometric-planter-base.stl",
+      "accent": "/models/dual-tone-geometric-planter-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "Two-part assembly with watertight internal reservoir",
+      "Contrasting geometric outer shell locks without AMS",
+      "Integrated wicking aeration sub-irrigation slots",
+      "Modern Scandinavian matte faceted exterior"
+    ],
+    "metaDescription": "Two-part assembly: watertight inner pot + contrasting ribbed outer geometric shell that locks together without AMS.",
+    "image": "/images/products/dual-tone-geometric-planter.svg",
+    "assemblyLabel": "Snap-Fit Multi-Color (No AMS - Press Together)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "gaming-controller-headphone-stand",
+    "name": "Gaming Controller & Headphone Desktop Stand",
+    "slug": "gaming-controller-headphone-stand",
+    "category": "Gaming & Workspace Accessories",
+    "categoryId": "gaming",
+    "trendingRank": 5,
+    "isTrending": true,
+    "priceINR": 649,
+    "price": 649,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 155,
+      "y": 140,
+      "z": 175
+    },
+    "dimensions": {
+      "x": 155,
+      "y": 140,
+      "z": 175
+    },
+    "dimensionsDisplay": "155 × 140 × 175 mm",
+    "weightGrams": 165,
+    "estimatedWeightGrams": 165,
+    "printTimeHours": 7.8,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#00E5FF",
+      "accent": "#FF6500"
+    },
+    "stlUrl": "/models/gaming-controller-headphone-stand.stl",
+    "modelUrl": "/models/gaming-controller-headphone-stand.stl",
+    "accentStlUrl": "/models/gaming-controller-headphone-stand-accent.stl",
+    "multiPart": {
+      "base": "/models/gaming-controller-headphone-stand-base.stl",
+      "accent": "/models/gaming-controller-headphone-stand-accent.stl",
+      "assemblyType": "keyed-assembly"
+    },
+    "material": "PLA+",
+    "features": [
+      "Keyed 3-part modular stand (heavy base + spine + cradle)",
+      "Universal cradle for PS5, Xbox, and Nintendo Pro controllers",
+      "Curved headphone resting arm with cable management hook",
+      "175mm tall profile fitting comfortably in 180mm build height"
+    ],
+    "metaDescription": "Keyed 3-part modular stand (heavy base + angled spine + contrasting cradle) for controllers and headsets.",
+    "image": "/images/products/gaming-controller-headphone-stand.svg",
+    "assemblyLabel": "Multi-Part Glued Assembly (No AMS - Separate Plates)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "mx-switch-tester-12",
+    "name": "Mechanical Keyboard Artisan Keycap & Switch Tester Dock",
+    "slug": "mx-switch-tester-12",
+    "category": "Mechanical Keyboard Accessories",
+    "categoryId": "keyboard",
+    "trendingRank": 6,
+    "isTrending": true,
+    "priceINR": 349,
+    "price": 349,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 85,
+      "y": 85,
+      "z": 32
+    },
+    "dimensions": {
+      "x": 85,
+      "y": 85,
+      "z": 32
+    },
+    "dimensionsDisplay": "85 × 85 × 32 mm",
+    "weightGrams": 48,
+    "estimatedWeightGrams": 48,
+    "printTimeHours": 3,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#FF3344",
+      "accent": "#D4D8E0"
+    },
+    "stlUrl": "/models/mx-switch-tester-12.stl",
+    "modelUrl": "/models/mx-switch-tester-12.stl",
+    "accentStlUrl": "/models/mx-switch-tester-12-accent.stl",
+    "multiPart": {
+      "base": "/models/mx-switch-tester-12-base.stl",
+      "accent": "/models/mx-switch-tester-12-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "3x3 MX switch tester base with press-fit color accent frame",
+      "Integrated keycap puller slot & desk lube tray recess",
+      "Tight 14mm square precision socket fit for Cherry, Gateron, Kailh",
+      "Chamfered ergonomic edge geometry"
+    ],
+    "metaDescription": "3x3 MX switch tester base with press-fit color accent frame and integrated keycap puller slot.",
+    "image": "/images/products/mx-switch-tester-12.jpg",
+    "assemblyLabel": "Snap-Fit Multi-Color (No AMS - Press Together)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "folding-phone-tablet-stand",
+    "name": "Adjustable Folding Phone & Tablet Geared Stand",
+    "slug": "folding-phone-tablet-stand",
+    "category": "Everyday Carry & Desk Gear",
+    "categoryId": "edc",
+    "trendingRank": 7,
+    "isTrending": true,
+    "priceINR": 329,
+    "price": 329,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 120,
+      "y": 95,
+      "z": 24
+    },
+    "dimensions": {
+      "x": 120,
+      "y": 95,
+      "z": 24
+    },
+    "dimensionsDisplay": "120 × 95 × 24 mm",
+    "weightGrams": 55,
+    "estimatedWeightGrams": 55,
+    "printTimeHours": 3.2,
+    "assemblyType": "print-in-place",
+    "partsCount": 1,
+    "defaultColors": {
+      "primary": "#FF6500",
+      "accent": "#2B313D"
+    },
+    "stlUrl": "/models/folding-phone-tablet-stand.stl",
+    "modelUrl": "/models/folding-phone-tablet-stand.stl",
+    "material": "PLA+",
+    "features": [
+      "Print-in-place ratcheting gear hinge",
+      "Press-fit contrasting side caps for two-tone look",
+      "Folds flat to 24mm thickness for bag portability",
+      "Stepless 15° to 75° viewing angle support"
+    ],
+    "metaDescription": "Print-in-place ratcheting gear hinge with press-fit contrasting side caps for phones and tablets.",
+    "image": "/images/products/folding-phone-tablet-stand.svg",
+    "assemblyLabel": "Print-in-Place (Single Color)",
+    "canExplode": false,
+    "partCount": 1
+  },
+  {
+    "id": "guitar-headstock-pick-dispenser",
+    "name": "Guitar Headstock Pick Dispenser & Capo Desk/Wall Dock",
+    "slug": "guitar-headstock-pick-dispenser",
+    "category": "Music & Audio Accessories",
+    "categoryId": "audio",
+    "trendingRank": 8,
+    "isTrending": true,
+    "priceINR": 399,
+    "price": 399,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 140,
+      "y": 75,
+      "z": 60
+    },
+    "dimensions": {
+      "x": 140,
+      "y": 75,
+      "z": 60
+    },
+    "dimensionsDisplay": "140 × 75 × 60 mm",
+    "weightGrams": 82,
+    "estimatedWeightGrams": 82,
+    "printTimeHours": 4.2,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#FFD700",
+      "accent": "#FF6500"
+    },
+    "stlUrl": "/models/guitar-headstock-pick-dispenser.stl",
+    "modelUrl": "/models/guitar-headstock-pick-dispenser.stl",
+    "accentStlUrl": "/models/guitar-headstock-pick-dispenser-accent.stl",
+    "multiPart": {
+      "base": "/models/guitar-headstock-pick-dispenser-base.stl",
+      "accent": "/models/guitar-headstock-pick-dispenser-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "Slots for standard guitar picks with spring-tensioned feed",
+      "Custom molded cradle for trigger capo storage",
+      "Contrasting front emblem glued into recessed pocket",
+      "Dual mounting: anti-slip desk feet or wall screw slots"
+    ],
+    "metaDescription": "Two-color keyed assembly with slots for standard guitar picks, trigger capo cradle, and contrasting emblem.",
+    "image": "/images/products/guitar-headstock-pick-dispenser.svg",
+    "assemblyLabel": "Multi-Part Glued Assembly (No AMS - Separate Plates)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "esp32-wled-controller-case",
+    "name": "ESP32 / WLED Smart Controller Snap-Fit Enclosure",
+    "slug": "esp32-wled-controller-case",
+    "category": "Custom Electronics Enclosures",
+    "categoryId": "enclosures",
+    "trendingRank": 9,
+    "isTrending": true,
+    "priceINR": 299,
+    "price": 299,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 92,
+      "y": 62,
+      "z": 34
+    },
+    "dimensions": {
+      "x": 92,
+      "y": 62,
+      "z": 34
+    },
+    "dimensionsDisplay": "92 × 62 × 34 mm",
+    "weightGrams": 42,
+    "estimatedWeightGrams": 42,
+    "printTimeHours": 2.8,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#00FF66",
+      "accent": "#3A414E"
+    },
+    "stlUrl": "/models/esp32-wled-controller-case.stl",
+    "modelUrl": "/models/esp32-wled-controller-case.stl",
+    "accentStlUrl": "/models/esp32-wled-controller-case-accent.stl",
+    "multiPart": {
+      "base": "/models/esp32-wled-controller-case-base.stl",
+      "accent": "/models/esp32-wled-controller-case-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "Vented two-piece electronics enclosure with snap-fit lid",
+      "Precision USB-C cutout + antenna slot",
+      "Contrasting LED diffuser bar for status illumination",
+      "M2.5 internal PCB mounting standoffs"
+    ],
+    "metaDescription": "Vented two-piece electronics enclosure with snap-fit lid, USB-C cutout, and contrasting LED diffuser bar.",
+    "image": "/images/products/esp32-wled-controller-case.jpg",
+    "assemblyLabel": "Snap-Fit Multi-Color (No AMS - Press Together)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "planetary-gear-fidget-spinner",
+    "name": "Planetary Gear Fidget Spinner & Desk Cube",
+    "slug": "planetary-gear-fidget-spinner",
+    "category": "Fidget & Kinetic Toys",
+    "categoryId": "toys",
+    "trendingRank": 10,
+    "isTrending": true,
+    "priceINR": 279,
+    "price": 279,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 70,
+      "y": 70,
+      "z": 20
+    },
+    "dimensions": {
+      "x": 70,
+      "y": 70,
+      "z": 20
+    },
+    "dimensionsDisplay": "70 × 70 × 20 mm",
+    "weightGrams": 38,
+    "estimatedWeightGrams": 38,
+    "printTimeHours": 2.5,
+    "assemblyType": "multi-part",
+    "partsCount": 3,
+    "defaultColors": {
+      "primary": "#00E5FF",
+      "accent": "#FF6500"
+    },
+    "stlUrl": "/models/planetary-gear-fidget-spinner.stl",
+    "modelUrl": "/models/planetary-gear-fidget-spinner.stl",
+    "accentStlUrl": "/models/planetary-gear-fidget-spinner-accent.stl",
+    "multiPart": {
+      "base": "/models/planetary-gear-fidget-spinner-base.stl",
+      "accent": "/models/planetary-gear-fidget-spinner-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "Print-in-place herringbone planetary gear teeth",
+      "Snap-in contrasting dual-sided center thumb caps",
+      "Ultra-smooth continuous gear meshing rotation",
+      "Zero support material needed"
+    ],
+    "metaDescription": "Print-in-place herringbone planetary gears with snap-in contrasting center cap for satisfying desk spinning.",
+    "image": "/images/products/planetary-gear-fidget-spinner.svg",
+    "assemblyLabel": "Print-in-Place (Single Color)",
+    "canExplode": true,
+    "partCount": 3
+  },
+  {
+    "id": "under-desk-clamp-headphone-hanger",
+    "name": "Under-Desk Clamp Headphone & Cable Hanger",
+    "slug": "under-desk-clamp-headphone-hanger",
+    "category": "Workspace Accessories",
+    "categoryId": "workspace",
+    "trendingRank": 11,
+    "isTrending": true,
+    "priceINR": 369,
+    "price": 369,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 110,
+      "y": 65,
+      "z": 95
+    },
+    "dimensions": {
+      "x": 110,
+      "y": 65,
+      "z": 95
+    },
+    "dimensionsDisplay": "110 × 65 × 95 mm",
+    "weightGrams": 75,
+    "estimatedWeightGrams": 75,
+    "printTimeHours": 4,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#FF6500",
+      "accent": "#D4D8E0"
+    },
+    "stlUrl": "/models/under-desk-clamp-headphone-hanger.stl",
+    "modelUrl": "/models/under-desk-clamp-headphone-hanger.stl",
+    "accentStlUrl": "/models/under-desk-clamp-headphone-hanger-accent.stl",
+    "multiPart": {
+      "base": "/models/under-desk-clamp-headphone-hanger-base.stl",
+      "accent": "/models/under-desk-clamp-headphone-hanger-accent.stl",
+      "assemblyType": "glued"
+    },
+    "material": "PLA+",
+    "features": [
+      "Heavy-duty C-clamp bracket fits desks up to 45mm thick",
+      "Printable metric knurled thumbscrew in contrasting accent color",
+      "Beveled headphone band support prevents cushion denting",
+      "Rear integrated dual cord loop notch"
+    ],
+    "metaDescription": "Heavy-duty C-clamp bracket with printable metric knurled thumbscrew in contrasting accent color.",
+    "image": "/images/products/under-desk-clamp-headphone-hanger.svg",
+    "assemblyLabel": "Multi-Part Glued Assembly (No AMS - Separate Plates)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "custom-raised-letter-nameplate",
+    "name": "Custom Raised-Letter Desk Nameplate / Gamer Tag",
+    "slug": "custom-raised-letter-nameplate",
+    "category": "Customized Workspace Decor",
+    "categoryId": "workspace",
+    "trendingRank": 12,
+    "isTrending": true,
+    "priceINR": 299,
+    "price": 299,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 170,
+      "y": 45,
+      "z": 25
+    },
+    "dimensions": {
+      "x": 170,
+      "y": 45,
+      "z": 25
+    },
+    "dimensionsDisplay": "170 × 45 × 25 mm",
+    "weightGrams": 50,
+    "estimatedWeightGrams": 50,
+    "printTimeHours": 3,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#F3F4F6",
+      "accent": "#FF6500"
+    },
+    "stlUrl": "/models/custom-raised-letter-nameplate.stl",
+    "modelUrl": "/models/custom-raised-letter-nameplate.stl",
+    "accentStlUrl": "/models/custom-raised-letter-nameplate-accent.stl",
+    "multiPart": {
+      "base": "/models/custom-raised-letter-nameplate-base.stl",
+      "accent": "/models/custom-raised-letter-nameplate-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "Single-extruder layer-swap print (pause at Z=3.0mm)",
+      "Matte Black base with high-contrast neon raised 3D lettering",
+      "45° angled presentation wedge profile",
+      "Personalized gamer tags, nameplates, or desk titles"
+    ],
+    "metaDescription": "Single-extruder layer-swap print with raised 3D typography paused at height for two-tone color.",
+    "image": "/images/products/custom-raised-letter-nameplate.svg",
+    "assemblyLabel": "Layer-Swap Dual Color (Pause at Height)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "bambu-poop-chute-catch-box",
+    "name": "A1 Mini Waste Purge Catch Bin",
+    "slug": "bambu-poop-chute-catch-box",
+    "category": "3D Printing & Workshop Gear",
+    "categoryId": "workshop",
+    "trendingRank": 13,
+    "isTrending": false,
+    "priceINR": 449,
+    "price": 449,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 135,
+      "y": 85,
+      "z": 88
+    },
+    "dimensions": {
+      "x": 135,
+      "y": 85,
+      "z": 88
+    },
+    "dimensionsDisplay": "135 × 85 × 88 mm",
+    "weightGrams": 160,
+    "estimatedWeightGrams": 160,
+    "printTimeHours": 6.5,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#FF6500",
+      "accent": "#3A414E"
+    },
+    "stlUrl": "/models/bambu-poop-chute-catch-box.stl",
+    "modelUrl": "/models/bambu-poop-chute-catch-box.stl",
+    "accentStlUrl": "/models/bambu-poop-chute-catch-box-accent.stl",
+    "multiPart": {
+      "base": "/models/bambu-poop-chute-catch-box-base.stl",
+      "accent": "/models/bambu-poop-chute-catch-box-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "Custom contoured to Bambu Lab A1 Mini purge arm",
+      "Keyed snap-together deflector ramp (No-AMS 2-plate assembly)",
+      "Anti-static smooth interior for effortless filament ejection",
+      "Dual rear mounting brackets for slip-free attachment"
+    ],
+    "metaDescription": "Trending #1 Bambu Lab A1 Mini purge wiper waste collection bin with snap-fit deflector slide ramp.",
+    "image": "/images/products/bambu-poop-chute-catch-box.svg",
+    "assemblyLabel": "Snap-Fit Multi-Color (No AMS - Press Together)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "rpi-zero-sensor-housing",
+    "name": "Raspberry Pi Zero Ventilated Sensor Housing",
+    "slug": "rpi-zero-sensor-housing",
+    "category": "Custom Electronics Enclosures",
+    "categoryId": "enclosures",
+    "trendingRank": 14,
+    "isTrending": false,
+    "priceINR": 299,
+    "price": 299,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 85,
+      "y": 55,
+      "z": 30
+    },
+    "dimensions": {
+      "x": 85,
+      "y": 55,
+      "z": 30
+    },
+    "dimensionsDisplay": "85 × 55 × 30 mm",
+    "weightGrams": 40,
+    "estimatedWeightGrams": 40,
+    "printTimeHours": 2.5,
+    "assemblyType": "multi-part",
+    "partsCount": 2,
+    "defaultColors": {
+      "primary": "#00E5FF",
+      "accent": "#D4D8E0"
+    },
+    "stlUrl": "/models/rpi-zero-sensor-housing.stl",
+    "modelUrl": "/models/rpi-zero-sensor-housing.stl",
+    "accentStlUrl": "/models/rpi-zero-sensor-housing-accent.stl",
+    "multiPart": {
+      "base": "/models/rpi-zero-sensor-housing-base.stl",
+      "accent": "/models/rpi-zero-sensor-housing-accent.stl",
+      "assemblyType": "snap-fit"
+    },
+    "material": "PLA+",
+    "features": [
+      "GPIO + camera ribbon access cutouts",
+      "Screw and DIN-rail mounting options",
+      "Ventilated sensor airflow layout",
+      "Matte PLA+ electronics-safe finish"
+    ],
+    "metaDescription": "Compact ventilated Raspberry Pi Zero + sensor breakout housing in PLA+. Screw/DIN-rail mount options.",
+    "image": "/images/products/rpi-zero-sensor-housing.jpg",
+    "assemblyLabel": "Snap-Fit Multi-Color (No AMS - Press Together)",
+    "canExplode": true,
+    "partCount": 2
+  },
+  {
+    "id": "modular-planter-trio-tray",
+    "name": "Modular Planter Trio with Drainage Tray",
+    "slug": "modular-planter-trio-tray",
+    "category": "Botanical & Home Goods",
+    "categoryId": "botanical",
+    "trendingRank": 15,
+    "isTrending": false,
+    "priceINR": 699,
+    "price": 699,
+    "currency": "INR",
+    "dimensionsMm": {
+      "x": 160,
+      "y": 160,
+      "z": 90
+    },
+    "dimensions": {
+      "x": 160,
+      "y": 160,
+      "z": 90
+    },
+    "dimensionsDisplay": "160 × 160 × 90 mm",
+    "weightGrams": 240,
+    "estimatedWeightGrams": 240,
+    "printTimeHours": 9,
+    "assemblyType": "multi-part",
+    "partsCount": 4,
+    "defaultColors": {
+      "primary": "#FF8C42",
+      "accent": "#F3F4F6"
+    },
+    "stlUrl": "/models/modular-planter-trio-tray.stl",
+    "modelUrl": "/models/modular-planter-trio-tray.stl",
+    "accentStlUrl": "/models/modular-planter-trio-tray-accent.stl",
+    "multiPart": {
+      "base": "/models/modular-planter-trio-tray-base.stl",
+      "accent": "/models/modular-planter-trio-tray-accent.stl",
+      "assemblyType": "glued"
+    },
+    "material": "PLA+",
+    "features": [
+      "3 interlocking pots + drainage tray set",
+      "Windowsill-optimized 160 mm footprint",
+      "Soil-volume tuned 0.8 L per pot",
+      "Stackable storage-ready geometry"
+    ],
+    "metaDescription": "Set of 3 interlocking indoor planters + drainage tray, precision printed in tough PLA+.",
+    "image": "/images/products/modular-planter-trio-tray.jpg",
+    "assemblyLabel": "Multi-Part Glued Assembly (No AMS - Separate Plates)",
+    "canExplode": true,
+    "partCount": 4
+  }
+]

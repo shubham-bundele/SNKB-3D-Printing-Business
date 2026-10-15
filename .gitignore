@@ -21,8 +21,8 @@ playwright-report/
 repro-tmp/
 
 # Runtime data & uploaded geometry
-data/
-uploads/
+/data/
+/uploads/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal

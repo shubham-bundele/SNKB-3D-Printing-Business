@@ -8,7 +8,7 @@
  *  - the enclosed volume in mm^3 (divergence theorem / signed tetrahedra)
  */
 
-const { unzipSync, strFromU8 } = require('three/examples/jsm/libs/fflate.module.js');
+const { unzipSync, strFromU8 } = require('fflate');
 
 const BINARY_HEADER_BYTES = 80;
 const BINARY_COUNT_BYTES = 4;

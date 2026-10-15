@@ -2895,7 +2895,7 @@ export default function StlViewer() {
       }
     } catch (fetchErr) {
       console.error('API Quote error:', fetchErr);
-      setError('Network error connecting to /api/quote. Make sure backend is running on port 3000.');
+      setError('Could not reach the quoting service. Check your connection and try again (large files over 4MB need Supabase direct upload enabled).');
     } finally {
       setLoading(false);
     }

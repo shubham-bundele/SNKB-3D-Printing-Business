@@ -1,7 +1,5 @@
 'use strict';
 
-const cookie = require('cookie');
-
 /**
  * Admin authorization middleware for SNKB 3D Studio.
  *
@@ -39,33 +37,36 @@ function getConfiguredSecret() {
   return secrets.length > 0 ? secrets[0] : null;
 }
 
+/**
+ * Zero-dependency RFC 6265 compliant cookie parser.
+ * Works natively in all Node.js / Serverless runtimes without ESM issues.
+ */
 function parseCookies(req) {
   if (req.cookies && typeof req.cookies === 'object' && Object.keys(req.cookies).length > 0) {
     return req.cookies;
   }
   const cookieHeader = req.headers && req.headers.cookie;
   if (!cookieHeader) return {};
-  try {
-    if (typeof cookie.parseCookie === 'function') {
-      return cookie.parseCookie(cookieHeader);
-    }
-    if (typeof cookie.parse === 'function') {
-      return cookie.parse(cookieHeader);
-    }
-  } catch {
-    /* fallback to manual split */
-  }
+
   const out = {};
-  String(cookieHeader)
-    .split(';')
-    .forEach((pair) => {
-      const idx = pair.indexOf('=');
-      if (idx > -1) {
-        const key = pair.slice(0, idx).trim();
-        const val = pair.slice(idx + 1).trim();
-        out[key] = decodeURIComponent(val);
+  const pairs = String(cookieHeader).split(';');
+  for (let i = 0; i < pairs.length; i += 1) {
+    const pair = pairs[i].trim();
+    if (!pair) continue;
+    const eqIdx = pair.indexOf('=');
+    if (eqIdx > 0) {
+      const key = pair.slice(0, eqIdx).trim();
+      let val = pair.slice(eqIdx + 1).trim();
+      if (val.startsWith('"') && val.endsWith('"')) {
+        val = val.slice(1, -1);
       }
-    });
+      try {
+        out[key] = decodeURIComponent(val);
+      } catch {
+        out[key] = val;
+      }
+    }
+  }
   return out;
 }
 

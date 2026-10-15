@@ -31,7 +31,6 @@
     "@supabase/supabase-js": "^2.117.3",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.8",
-    "cookie": "^2.0.1",
     "cors": "^2.8.5",
     "dotenv": "^18.0.7",
     "express": "^4.21.2",

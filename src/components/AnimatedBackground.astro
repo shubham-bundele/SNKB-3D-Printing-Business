@@ -1,0 +1,125 @@
+---
+// Industrial CAD atmosphere: blueprint grids, diagonal light beams (no radial
+// gradients), and a mouse-reactive laser particle stream field.
+---
+
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+  {/* Layer 1: Fine CAD Grid overlay with radial mask */}
+  <div class="absolute inset-0 cad-grid-bg opacity-30 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_85%)]"></div>
+
+  {/* Layer 2: Subtle Dot Matrix Blueprint Grid */}
+  <div class="absolute inset-0 cad-dots-bg opacity-20 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"></div>
+
+  {/* Layer 3: Diagonal industrial light beams */}
+  <div class="absolute -top-1/4 -left-1/4 w-[130%] h-40 rotate-[-18deg] bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent blur-2xl"></div>
+  <div class="absolute top-1/3 -left-1/4 w-[130%] h-24 rotate-[-18deg] bg-gradient-to-r from-transparent via-orange-500/[0.07] to-transparent blur-2xl"></div>
+  <div class="absolute bottom-0 -left-1/4 w-[130%] h-32 rotate-[-18deg] bg-gradient-to-r from-transparent via-emerald-500/[0.06] to-transparent blur-2xl"></div>
+
+  {/* Layer 4: Mouse-reactive laser particle canvas */}
+  <canvas id="ambient-particles" class="absolute inset-0 w-full h-full opacity-40"></canvas>
+</div>
+
+<script>
+  // Lightweight laser particle streams that accelerate near the cursor.
+  const canvas = document.getElementById('ambient-particles') as HTMLCanvasElement | null;
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let animationFrameId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+    const mouse = { x: -9999, y: -9999 };
+
+    const onResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    const onMouse = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
+    window.addEventListener('resize', onResize);
+    window.addEventListener('mousemove', onMouse);
+
+    const particleCount = Math.min(Math.floor(window.innerWidth / 35), 45);
+    const particles: Array<{
+      x: number;
+      y: number;
+      size: number;
+      speedY: number;
+      speedX: number;
+      opacity: number;
+      color: string;
+    }> = [];
+
+    const colors = [
+      'rgba(255, 101, 0, ',  // Safety orange
+      'rgba(0, 255, 102, ',   // Laser green
+      'rgba(129, 140, 248, ', // Indigo
+      'rgba(56, 189, 248, ',  // Cyan
+    ];
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2 + 0.8,
+        speedY: -(Math.random() * 0.4 + 0.15),
+        speedX: (Math.random() - 0.5) * 0.25,
+        opacity: Math.random() * 0.5 + 0.2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+
+    const render = () => {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        // Streams near the cursor accelerate + stretch into motion streaks
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        const boost = dist < 160 ? (1 - dist / 160) * 3.2 : 0;
+        p.y += p.speedY * (1 + boost);
+        p.x += p.speedX * (1 + boost);
+
+        // Wrap around edges
+        if (p.y < 0) {
+          p.y = height + 10;
+          p.x = Math.random() * width;
+        }
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + Math.min(1, p.opacity + boost * 0.15) + ')';
+        ctx.shadowBlur = p.size * 3;
+        ctx.shadowColor = p.color + '0.8)';
+        ctx.fill();
+        // Motion streak toward travel direction when boosted
+        if (boost > 0.4) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x - p.speedX * 22 * boost, p.y - p.speedY * 22 * boost);
+          ctx.strokeStyle = p.color + '0.5)';
+          ctx.lineWidth = p.size * 0.8;
+          ctx.stroke();
+        }
+        ctx.shadowBlur = 0; // reset
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    window.addEventListener('beforeunload', () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('mousemove', onMouse);
+    });
+  }
+</script>

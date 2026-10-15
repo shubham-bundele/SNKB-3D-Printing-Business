@@ -1,0 +1,284 @@
+---
+/**
+ * src/components/InteractiveProductionPipeline.astro
+ *
+ * Interactive 4-Stage Production Pipeline ("How It Works")
+ * Features an animated glowing data conduit connecting cards 01 -> 02 -> 03 -> 04
+ * with interactive miniature graphics inside each card (bounding box snap, overhang orientation,
+ * infill nozzle toolpath, and India delivery timeline estimator).
+ */
+---
+
+<div class="interactive-production-pipeline relative w-full">
+  {/* Animated Glowing Data Conduit Spine (Visible on lg screens) */}
+  <div class="hidden lg:flex items-center justify-between relative mb-8 px-12 select-none pointer-events-none">
+    {/* Background conduit pipe */}
+    <div class="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-[3px] bg-[#1a1c23] border-y border-zinc-800/80"></div>
+    {/* Continuous pulsing laser conduit line */}
+    <div class="conduit-laser-line absolute left-10 right-10 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-[#FF6500] via-[#00FF66] to-[#00E5FF] opacity-75"></div>
+
+    {/* Stage Conduit Junction Nodes */}
+    <div class="relative z-10 flex items-center gap-1.5 bg-black/90 px-3 py-1 rounded-full border border-zinc-800 text-[10px] font-mono text-zinc-400">
+      <span class="w-2 h-2 rounded-full bg-[#FF6500] animate-pulse"></span>
+      <span>01: INGEST</span>
+    </div>
+    <div class="relative z-10 flex items-center gap-1.5 bg-black/90 px-3 py-1 rounded-full border border-zinc-800 text-[10px] font-mono text-zinc-400">
+      <span class="w-2 h-2 rounded-full bg-[#00FF66]"></span>
+      <span>02: G-CODE</span>
+    </div>
+    <div class="relative z-10 flex items-center gap-1.5 bg-black/90 px-3 py-1 rounded-full border border-zinc-800 text-[10px] font-mono text-zinc-400">
+      <span class="w-2 h-2 rounded-full bg-[#00E5FF]"></span>
+      <span>03: EXTRUDE</span>
+    </div>
+    <div class="relative z-10 flex items-center gap-1.5 bg-black/90 px-3 py-1 rounded-full border border-zinc-800 text-[10px] font-mono text-zinc-400">
+      <span class="w-2 h-2 rounded-full bg-[#FF6500]"></span>
+      <span>04: DISPATCH</span>
+    </div>
+  </div>
+
+  {/* 4 Hardware Pipeline Cards */}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+
+    {/* Card 01: Drop Your .STL */}
+    <div class="pipeline-card-01 relative p-4 sm:p-6 cut-sm panel-ind hover:border-[#FF6500]/60 transition-all duration-200 group hover:-translate-y-1 flex flex-col justify-between shadow-lg bg-[#14151a]/90">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-3xl font-extrabold font-mono text-zinc-800 group-hover:text-[#FF6500]/40 transition-colors">01</span>
+          <div class="w-10 h-10 cut-sm bg-[#FF6500]/10 border border-[#FF6500]/40 flex items-center justify-center text-[#FF6500]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Miniature Interactive Graphic: 3D Bounding Box Snap Widget */}
+        <div class="my-3 p-2.5 rounded bg-[#0a0b0e] border border-zinc-800/80 relative overflow-hidden group/box">
+          <div class="flex items-center justify-between text-[9px] font-mono text-zinc-500 mb-1">
+            <span>BOUNDING BOX</span>
+            <span class="bbox-status-text text-zinc-400 font-bold transition-colors">AUTO-INTEGRATED BBOX</span>
+          </div>
+          <svg class="w-full h-18 text-zinc-500" viewBox="0 0 160 70">
+            {/* 3D Isometric Bounding Box */}
+            <path d="M 80 12 L 125 28 L 80 44 L 35 28 Z" fill="rgba(255, 101, 0, 0.08)" stroke="#FF6500" stroke-width="1.2" />
+            <path d="M 35 28 L 80 44 L 80 64 L 35 48 Z" fill="rgba(255, 101, 0, 0.14)" stroke="#FF6500" stroke-width="1.2" />
+            <path d="M 125 28 L 80 44 L 80 64 L 125 48 Z" fill="rgba(255, 101, 0, 0.05)" stroke="#FF6500" stroke-width="1.2" />
+            {/* Dimensions text */}
+            <text x="80" y="30" fill="#ffffff" font-size="7" font-family="monospace" text-anchor="middle">85×55×32 mm</text>
+            <text x="80" y="58" fill="#00FF66" font-size="6.5" font-family="monospace" text-anchor="middle">VOL: 42.6 cm³</text>
+          </svg>
+        </div>
+
+        <h3 class="text-lg font-bold text-white mb-2">Drop Your .STL</h3>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          Drag & drop any binary or ASCII STL file. Our client engine immediately parses triangles, compute volume in mm³, and extracts bounding-box measurements.
+        </p>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+        <span>SPEED: &lt; 250ms</span>
+        <span class="text-[#00FF66]">100% CLIENT-SIDE</span>
+      </div>
+    </div>
+
+    {/* Card 02: Live 3D Slicing & Quote */}
+    <div class="pipeline-card-02 relative p-4 sm:p-6 cut-sm panel-ind hover:border-[#00FF66]/60 transition-all duration-200 group hover:-translate-y-1 flex flex-col justify-between shadow-lg bg-[#14151a]/90">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-3xl font-extrabold font-mono text-zinc-800 group-hover:text-[#00FF66]/40 transition-colors">02</span>
+          <div class="w-10 h-10 cut-sm bg-[#00FF66]/10 border border-[#00FF66]/40 flex items-center justify-center text-[#00FF66]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Miniature Interactive Graphic: Overhang Detection & Auto-Orient Simulator */}
+        <div class="my-3 p-2.5 rounded bg-[#0a0b0e] border border-zinc-800/80 relative overflow-hidden">
+          <div class="flex items-center justify-between text-[9px] font-mono mb-1">
+            <span class="overhang-badge telemetry text-[#FF5147] bg-[#FF5147]/10 px-1.5 py-0.5 rounded border border-[#FF5147]/30">
+              OVERHANGS: 28% (REPAIR)
+            </span>
+            <span class="overhang-price text-emerald-400 font-bold">₹189</span>
+          </div>
+
+          <svg class="w-full h-18 text-zinc-500" viewBox="0 0 160 70">
+            {/* Build plate */}
+            <line x1="20" y1="58" x2="140" y2="58" stroke="#3a3d46" stroke-width="1.5" />
+            {/* Tilting part */}
+            <polygon
+              class="overhang-svg-part transition-all duration-300"
+              points="60,20 90,20 105,48 45,48"
+              fill="#FF5147"
+              fill-opacity="0.7"
+              stroke="#FF5147"
+              stroke-width="1.5"
+            />
+          </svg>
+
+          <button
+            type="button"
+            class="pipeline-orient-btn w-full mt-1 py-1 text-[9px] font-mono font-bold cut-sm bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 hover:border-[#00FF66] transition cursor-pointer"
+          >
+            Test Auto-Orient
+          </button>
+        </div>
+
+        <h3 class="text-lg font-bold text-white mb-2">Live 3D Slicing &amp; Quote</h3>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          Inspect the model in full 360° orbit, preview filament finishes, test Auto-Orient to minimize overhangs, and view an itemized transparent INR quote.
+        </p>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+        <span>AUTO-ORIENT: 900ms</span>
+        <span class="text-[#00FF66]">MIN HAZARDS</span>
+      </div>
+    </div>
+
+    {/* Card 03: Multi-Printer Farm Print */}
+    <div class="pipeline-card-03 relative p-4 sm:p-6 cut-sm panel-ind hover:border-[#00FF66]/60 transition-all duration-200 group hover:-translate-y-1 flex flex-col justify-between shadow-lg bg-[#14151a]/90">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-3xl font-extrabold font-mono text-zinc-800 group-hover:text-[#00FF66]/40 transition-colors">03</span>
+          <div class="w-10 h-10 cut-sm bg-[#00FF66]/10 border border-[#00FF66]/40 flex items-center justify-center text-[#00FF66]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Miniature Interactive Graphic: Toolpath Infill & Nozzle Head Animation */}
+        <div class="my-3 p-2.5 rounded bg-[#0a0b0e] border border-zinc-800/80 relative overflow-hidden">
+          <div class="flex items-center justify-between text-[9px] font-mono text-zinc-500 mb-1">
+            <span class="pipeline-layer-counter text-[#00FF66]">L-142 / 280 (0.16mm)</span>
+            <span class="text-orange-400">215°C NOZZLE</span>
+          </div>
+
+          <svg class="w-full h-18 text-zinc-500" viewBox="0 0 160 70">
+            {/* Build perimeter */}
+            <rect x="25" y="15" width="110" height="42" fill="none" stroke="#2b2e36" stroke-width="1" />
+            {/* Infill zigzag paths */}
+            <line class="infill-line-svg transition-opacity" x1="30" y1="20" x2="55" y2="52" stroke="#FF6500" stroke-width="1.5" opacity="1" />
+            <line class="infill-line-svg transition-opacity" x1="55" y1="52" x2="80" y2="20" stroke="#FF6500" stroke-width="1.5" opacity="1" />
+            <line class="infill-line-svg transition-opacity" x1="80" y1="20" x2="105" y2="52" stroke="#FF6500" stroke-width="1.5" opacity="1" />
+            <line class="infill-line-svg transition-opacity" x1="105" y1="52" x2="130" y2="20" stroke="#FF6500" stroke-width="1.5" opacity="0.4" />
+            {/* Moving brass nozzle head */}
+            <g class="nozzle-svg-head transition-all duration-300" transform="translate(105, 25)">
+              <polygon points="0,0 -4,-8 4,-8" fill="#ffb020" />
+              <circle cx="0" cy="0" r="1.5" fill="#ffffff" />
+            </g>
+          </svg>
+        </div>
+
+        <h3 class="text-lg font-bold text-white mb-2">Multi-Printer Farm Print</h3>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          Upon order confirmation, your job enters our synchronized print farm. Extruded with high-precision nozzles at 0.08–0.28 mm layers for superior strength.
+        </p>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+        <span>FARM SYNC: ACTIVE</span>
+        <span class="text-[#00FF66]">±0.1 mm PRECISION</span>
+      </div>
+    </div>
+
+    {/* Card 04: Pan-India Express Dispatch */}
+    <div class="pipeline-card-04 relative p-4 sm:p-6 cut-sm panel-ind hover:border-[#FF6500]/60 transition-all duration-200 group hover:-translate-y-1 flex flex-col justify-between shadow-lg bg-[#14151a]/90">
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-3xl font-extrabold font-mono text-zinc-800 group-hover:text-[#FF6500]/40 transition-colors">04</span>
+          <div class="w-10 h-10 cut-sm bg-[#FF6500]/10 border border-[#FF6500]/40 flex items-center justify-center text-[#FF6500]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Miniature Interactive Graphic: Pan-India Express Transit Timeline Widget */}
+        <div class="my-3 p-2.5 rounded bg-[#0a0b0e] border border-zinc-800/80 relative overflow-hidden">
+          <div class="flex items-center justify-between text-[9px] font-mono text-zinc-500 mb-1.5">
+            <span class="pipeline-eta-display text-white font-bold">Delhi: 24–48h [AIR]</span>
+            <span class="pipeline-carrier-display text-sky-400">Blue Dart Air</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1 mb-1.5">
+            <button
+              type="button"
+              class="pin-quick-chip active cut-sm py-1 px-1.5 text-[9px] font-mono border border-[#FF6500] bg-black text-white cursor-pointer truncate"
+              data-city="Delhi (110001)"
+              data-eta="24–48h [EXPRESS AIR]"
+              data-carrier="Blue Dart Express"
+            >
+              Delhi 24h
+            </button>
+            <button
+              type="button"
+              class="pin-quick-chip cut-sm py-1 px-1.5 text-[9px] font-mono border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white cursor-pointer truncate"
+              data-city="Mumbai (400001)"
+              data-eta="24–48h [EXPRESS AIR]"
+              data-carrier="Delhivery Priority"
+            >
+              Mumbai 24h
+            </button>
+            <button
+              type="button"
+              class="pin-quick-chip cut-sm py-1 px-1.5 text-[9px] font-mono border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white cursor-pointer truncate"
+              data-city="Bengaluru (560001)"
+              data-eta="48h [AIR TRANSIT]"
+              data-carrier="Blue Dart Air"
+            >
+              BLR 48h
+            </button>
+            <button
+              type="button"
+              class="pin-quick-chip cut-sm py-1 px-1.5 text-[9px] font-mono border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white cursor-pointer truncate"
+              data-city="Rest of India"
+              data-eta="48–72h [SURFACE / AIR]"
+              data-carrier="All Pincodes Supported"
+            >
+              Rest of India
+            </button>
+          </div>
+        </div>
+
+        <h3 class="text-lg font-bold text-white mb-2">Pan-India Express Dispatch</h3>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          Every part passes dimensional tolerance inspection before being cushioned and dispatched with live courier tracking straight to your address.
+        </p>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+        <span>TRACKING: SMS + EMAIL</span>
+        <span class="text-[#00FF66]">ALL PIN CODES</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  @keyframes conduitFlow {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 200% 50%;
+    }
+  }
+
+  .conduit-laser-line {
+    background-size: 200% 100%;
+    animation: conduitFlow 3s linear infinite;
+  }
+</style>
+
+<script>
+  import { initProductionPipeline } from './interactiveProductionPipeline.js';
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initProductionPipeline);
+  } else {
+    initProductionPipeline();
+  }
+  document.addEventListener('astro:page-load', initProductionPipeline);
+</script>

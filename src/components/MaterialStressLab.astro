@@ -1,0 +1,248 @@
+---
+/**
+ * src/components/MaterialStressLab.astro
+ *
+ * Gamified Material Stress-Test Simulator & Spool Lab.
+ * Replaces static material cards with an interactive Filament Selector,
+ * Mechanical Force / Bend Test Simulator (0–100 N), Property Matrix, and Spool Selector.
+ */
+---
+
+<div class="material-stress-lab relative w-full cut-sm panel-ind border border-zinc-800 p-4 sm:p-6 md:p-8 shadow-2xl bg-[#0e1014]/90 overflow-hidden">
+  {/* Header: Selector Tabs & Active Material Badge */}
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
+    <div>
+      <div class="flex items-center gap-2 mb-1.5">
+        <span class="w-2 h-2 rounded-full bg-[#00FF66] animate-pulse"></span>
+        <span class="telemetry text-xs text-[#00FF66]">MECHANICAL STRESS LAB // BEND TESTING</span>
+      </div>
+      <h3 class="mat-name-display text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+        Tough PLA+
+      </h3>
+      <p class="mat-density-display text-xs text-[#FF6500] font-mono mt-0.5">
+        Density: 1.24 g/cm³ • ±0.1mm Tolerance
+      </p>
+    </div>
+
+    {/* Material Selector Tabs — full-width 3-button segmented bar on mobile,
+        inline pills on desktop */}
+    <div class="grid grid-cols-3 w-full lg:w-auto items-stretch gap-2">
+      <button
+        type="button"
+        class="mat-tab-btn active cut-sm px-2 sm:px-4 py-2 min-h-[44px] text-[11px] sm:text-xs font-mono font-bold border border-[#FF6500] bg-black text-white hover:border-[#FF6500] transition-all cursor-pointer shadow-lg whitespace-nowrap"
+        data-mat="pla"
+      >
+        Tough PLA+
+      </button>
+      <button
+        type="button"
+        class="mat-tab-btn cut-sm px-2 sm:px-4 py-2 min-h-[44px] text-[11px] sm:text-xs font-mono font-bold border border-zinc-800 text-zinc-400 hover:text-white hover:border-sky-400 bg-zinc-950/70 transition-all cursor-pointer whitespace-nowrap"
+        data-mat="petg"
+      >
+        PETG / Industrial
+      </button>
+      <button
+        type="button"
+        class="mat-tab-btn cut-sm px-2 sm:px-4 py-2 min-h-[44px] text-[11px] sm:text-xs font-mono font-bold border border-zinc-800 text-zinc-400 hover:text-white hover:border-[#00FF66] bg-zinc-950/70 transition-all cursor-pointer whitespace-nowrap"
+        data-mat="tpu"
+      >
+        Flexible TPU (95A)
+      </button>
+    </div>
+  </div>
+
+  {/* Main Dual-Panel Simulator & Property Radar */}
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 pt-6 items-start">
+
+    {/* Left 7 Columns: Interactive Force / Bend Test Cantilever Simulator */}
+    <div class="lg:col-span-7 flex flex-col justify-between p-4 sm:p-5 cut-sm bg-black/60 border border-zinc-800/90 relative">
+      <div class="flex items-center justify-between mb-3 text-xs font-mono">
+        <span class="telemetry text-zinc-400">SIMULATION: CANTILEVER LOAD</span>
+        <span class="behavior-badge text-[#FF6500] font-bold text-[11px] tracking-wider">
+          ULTRA-RIGID BEAM
+        </span>
+      </div>
+
+      {/* SVG Physics Test Rig */}
+      <div class="relative w-full h-[220px] sm:h-[260px] bg-[#090a0d] rounded border border-zinc-900 flex items-center justify-center overflow-hidden">
+        {/* Engineering blueprint grid */}
+        <div class="absolute inset-0 cad-grid-bg opacity-30 pointer-events-none"></div>
+
+        <svg class="w-full h-full" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="forceArrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#FF6500" />
+            </marker>
+          </defs>
+
+          {/* Fixed Clamp (Left Jaw) */}
+          <rect x="10" y="40" width="26" height="60" fill="#1c1e24" stroke="#3a3d46" stroke-width="1.5" rx="2" />
+          <line x1="10" y1="55" x2="36" y2="55" stroke="#2b2e36" stroke-width="1" />
+          <line x1="10" y1="70" x2="36" y2="70" stroke="#2b2e36" stroke-width="1" />
+          <line x1="10" y1="85" x2="36" y2="85" stroke="#2b2e36" stroke-width="1" />
+          <text x="23" y="112" fill="#5b606c" font-size="7" font-family="monospace" text-anchor="middle">CLAMP</text>
+
+          {/* Reference Zero-Line */}
+          <line x1="36" y1="70" x2="280" y2="70" stroke="#22252e" stroke-width="1" stroke-dasharray="3 3" />
+
+          {/* The Deflecting Cantilever Beam */}
+          <path class="beam-svg-path" d="M 36 64 C 130 64, 200 64, 265 64 L 265 76 C 200 76, 130 76, 36 76 Z" fill="#FF6500" fill-opacity="0.85" stroke="#FF6500" stroke-width="1.5" />
+
+          {/* Force Vector Arrow & Tip Indicator */}
+          <g class="beam-tip-group" transform="translate(265, 70)">
+            {/* Force Arrow pointing down */}
+            <line x1="0" y1="-32" x2="0" y2="-6" stroke="#FF6500" stroke-width="2.5" marker-end="url(#forceArrow)" />
+            <text x="0" y="-36" fill="#FF6500" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">FORCE</text>
+            {/* Deflection point */}
+            <circle cx="0" cy="0" r="3" fill="#ffffff" />
+          </g>
+        </svg>
+
+        {/* Live Digital Readout Floating Overlay */}
+        <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-mono px-3 py-1.5 bg-black/80 backdrop-blur-md rounded border border-zinc-800">
+          <div>
+            <span class="text-zinc-500">DEFLECTION: </span>
+            <span class="deflection-val text-white font-bold">0.8 mm (0.9°)</span>
+          </div>
+          <div>
+            <span class="text-zinc-500">ROOT STRESS: </span>
+            <span class="stress-val text-[#00FF66] font-bold">34 MPa</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Force Slider Controls */}
+      <div class="mt-4 pt-4 border-t border-zinc-800">
+        <div class="flex items-center justify-between text-xs font-mono mb-2">
+          <span class="text-zinc-300 font-semibold flex items-center gap-1.5">
+            <span>Apply Load:</span>
+            <span class="force-val-display text-[#FF6500] font-bold">45 N</span>
+          </span>
+          <span class="text-zinc-500 text-[10px]">Range: 0 N (Rest) → 100 N (Max Load)</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value="45"
+          step="1"
+          class="force-load-slider w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#FF6500]"
+          title="Drag to simulate applied mechanical force"
+        />
+        <div class="flex justify-between text-[9px] font-mono text-zinc-500 mt-1">
+          <span>0 N (Zero Strain)</span>
+          <span>50 N (Working Load)</span>
+          <span>100 N (Extreme Stress)</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Right 5 Columns: Animated Progress Matrix, Spool Swatches & Quoter Action */}
+    <div class="lg:col-span-5 flex flex-col justify-between space-y-5">
+      {/* Property Matrix / Progress Meters */}
+      <div class="space-y-3.5 bg-black/40 p-4 sm:p-6 cut-sm border border-zinc-800">
+        <div class="flex items-center justify-between text-xs font-mono pb-2 border-b border-zinc-800">
+          <span class="telemetry text-zinc-400">MECHANICAL SPECS</span>
+          <span class="mat-badge-display text-[10px] font-bold text-[#FF6500] uppercase">
+            Production Default
+          </span>
+        </div>
+
+        {/* Rigidity */}
+        <div>
+          <div class="flex justify-between text-[11px] font-mono mb-1">
+            <span class="text-zinc-400">Rigidity / Stiffness</span>
+            <span class="val-rigidity text-white font-semibold">98% (Ultra-Rigid)</span>
+          </div>
+          <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-rigidity h-full bg-[#FF6500] transition-all duration-300" style="width: 98%;"></div>
+          </div>
+        </div>
+
+        {/* Impact Toughness */}
+        <div>
+          <div class="flex justify-between text-[11px] font-mono mb-1">
+            <span class="text-zinc-400">Impact Toughness</span>
+            <span class="val-impact text-white font-semibold">68% (Impact Modified)</span>
+          </div>
+          <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-impact h-full bg-[#FF6500] transition-all duration-300" style="width: 68%;"></div>
+          </div>
+        </div>
+
+        {/* Heat Deflection */}
+        <div>
+          <div class="flex justify-between text-[11px] font-mono mb-1">
+            <span class="text-zinc-400">Heat Deflection</span>
+            <span class="val-heat text-white font-semibold">55°C – 60°C</span>
+          </div>
+          <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-heat h-full bg-[#FF6500] transition-all duration-300" style="width: 60%;"></div>
+          </div>
+        </div>
+
+        {/* Layer Adhesion */}
+        <div>
+          <div class="flex justify-between text-[11px] font-mono mb-1">
+            <span class="text-zinc-400">Layer Adhesion</span>
+            <span class="val-adhesion text-white font-semibold">92% (High Fusion)</span>
+          </div>
+          <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-adhesion h-full bg-[#FF6500] transition-all duration-300" style="width: 92%;"></div>
+          </div>
+        </div>
+
+        {/* Flexibility */}
+        <div>
+          <div class="flex justify-between text-[11px] font-mono mb-1">
+            <span class="text-zinc-400">Flexibility / Elasticity</span>
+            <span class="val-flexibility text-white font-semibold">12% (Low Flex)</span>
+          </div>
+          <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div class="bar-flexibility h-full bg-[#FF6500] transition-all duration-300" style="width: 12%;"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Available Spool Colors */}
+      <div class="bg-black/40 p-4 sm:p-6 cut-sm border border-zinc-800">
+        <div class="flex items-center justify-between text-xs font-mono mb-2">
+          <span class="telemetry text-zinc-400">IN-STOCK SPOOLS:</span>
+          <span class="mat-rate-display text-[11px] font-bold text-[#00FF66]">From ₹2.50 /g</span>
+        </div>
+        <div class="spool-chips-container flex flex-wrap gap-1.5">
+          {/* Populated dynamically by JS */}
+        </div>
+      </div>
+
+      {/* Recommended Applications blurb */}
+      <div class="mat-recommend-display text-[11px] font-mono text-zinc-400 bg-zinc-950 p-3 cut-sm border border-zinc-800 leading-relaxed">
+        Recommended: ESP32 cases, mechanical keyboard frames, indoor decor, functional prototypes.
+      </div>
+
+      {/* "Select This Material in Quoter" CTA Button */}
+      <button
+        type="button"
+        class="select-quoter-btn btn-mech btn-primary cut-sm w-full py-3 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-orange-950/40"
+      >
+        <span class="font-mono text-xs opacity-70">[</span>
+        <svg class="w-4 h-4 text-black shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>Select This Material in Quoter →</span>
+        <span class="font-mono text-xs opacity-70">]</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initMaterialStressLab } from './materialStressLab.js';
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMaterialStressLab);
+  } else {
+    initMaterialStressLab();
+  }
+  document.addEventListener('astro:page-load', initMaterialStressLab);
+</script>

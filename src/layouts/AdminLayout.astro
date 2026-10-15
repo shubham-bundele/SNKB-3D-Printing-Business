@@ -1,0 +1,268 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  activeNav?: string;
+}
+
+const {
+  title = "SNKB 3D Studio — Private Admin Console",
+  activeNav = "orders"
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="bg-zinc-950 text-zinc-100 antialiased selection:bg-[#FF6500] selection:text-black">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-zinc-950 font-sans flex flex-col lg:flex-row">
+    {/* Mobile drawer backdrop (lg:hidden) */}
+    <div id="admin-sidebar-backdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"></div>
+
+    {/* Left Sidebar Navigation — off-canvas drawer on mobile, static rail on lg+ */}
+    <aside
+      id="admin-sidebar"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0 overflow-y-auto -translate-x-full transition-transform duration-200 ease-out lg:static lg:translate-x-0 lg:z-auto lg:overflow-visible"
+    >
+      {/* Brand & Portal Header */}
+      <div class="p-5 border-b border-zinc-800">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF6500] to-[#993d00] flex items-center justify-center shadow-lg shadow-orange-900/40">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <div>
+            <span class="font-bold text-sm tracking-tight text-white block">SNKB 3D Studio</span>
+            <span class="text-[10px] text-[#FF6500] font-mono tracking-wider uppercase block font-semibold">
+              Admin Console
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Machine Status Pill */}
+      <div class="mx-4 my-3 p-3 rounded-xl bg-zinc-950/80 border border-zinc-800 text-xs">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[10px] font-mono text-zinc-400 uppercase">Printer Fleet</span>
+          <span class="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Online
+          </span>
+        </div>
+        <div class="font-semibold text-zinc-200 text-xs">Production Unit #01</div>
+        <div class="text-[10px] text-zinc-500 font-mono mt-0.5">
+          High-Speed FDM | 0.4mm Hardened Nozzle
+        </div>
+      </div>
+
+      {/* Sidebar Navigation Links */}
+      <nav class="flex-1 px-3 py-2 space-y-6 overflow-y-auto text-xs">
+        <div>
+          <span class="px-3 text-[10px] font-mono uppercase tracking-wider text-zinc-500 block mb-2 font-semibold">
+            Order Fulfillment
+          </span>
+          <ul class="space-y-1">
+            <li>
+              <a
+                href="/admin"
+                class={`flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium transition ${
+                  activeNav === 'orders'
+                    ? 'bg-[#FF6500] text-black shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+                }`}
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                <span>Orders & Quotes</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#queue"
+                class="flex items-center justify-between px-3 py-2 rounded-xl font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition"
+              >
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <span>Active Print Queue</span>
+                </div>
+                <span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[#FF6500]/10 text-[#FF6500] border border-[#FF6500]/40">
+                  2 printing
+                </span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <span class="px-3 text-[10px] font-mono uppercase tracking-wider text-zinc-500 block mb-2 font-semibold">
+            Materials & Shop
+          </span>
+          <ul class="space-y-1">
+            <li>
+              <a
+                href="#inventory"
+                class="flex items-center justify-between px-3 py-2 rounded-xl font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition"
+              >
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <span>PLA+ Inventory</span>
+                </div>
+                <span class="text-[10px] font-mono text-zinc-500">₹1,800/kg</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#analytics"
+                class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span>Profit & Margins</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <span class="px-3 text-[10px] font-mono uppercase tracking-wider text-zinc-500 block mb-2 font-semibold">
+            System & Rules
+          </span>
+          <ul class="space-y-1">
+            <li>
+              <a
+                href="#limits"
+                class="flex items-center justify-between px-3 py-2 rounded-xl font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition"
+              >
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                  <span>Print Farm</span>
+                </div>
+                <span class="text-[10px] font-mono text-emerald-400">Active</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="/api/health"
+                target="_blank"
+                rel="noreferrer"
+                class="flex items-center justify-between px-3 py-2 rounded-xl font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition"
+              >
+                <div class="flex items-center gap-2.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>API Health</span>
+                </div>
+                <span class="text-[10px] font-mono text-emerald-400">/api/health</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      {/* Sidebar Footer Link */}
+      <div class="p-4 border-t border-zinc-800 bg-zinc-950/40">
+        <a
+          href="/"
+          class="flex items-center gap-2 text-xs text-zinc-400 hover:text-white transition px-2 py-1.5 rounded-lg hover:bg-zinc-800"
+        >
+          <svg class="w-4 h-4 text-[#FF6500]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Back to Storefront</span>
+        </a>
+      </div>
+    </aside>
+
+    {/* Main Content Area */}
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+      {/* Mobile Top Bar (lg:hidden) with hamburger */}
+      <div class="lg:hidden sticky top-0 z-30 h-14 bg-zinc-900 border-b border-zinc-800 px-3 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          id="admin-menu-toggle"
+          class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-zinc-700 bg-zinc-950 text-zinc-100 cursor-pointer"
+          aria-label="Open admin navigation"
+          aria-expanded="false"
+          aria-controls="admin-sidebar"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span class="font-bold text-sm text-white tracking-tight">SNKB Admin</span>
+        <a href="/" class="text-xs font-mono text-[#FF6500] px-2 py-2">Store →</a>
+      </div>
+
+      {/* Top Header Bar (desktop) */}
+      <header class="hidden lg:flex h-16 bg-zinc-900 border-b border-zinc-800 px-6 items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-semibold text-white">Fulfillment & Operations</span>
+          <span class="text-zinc-600">/</span>
+          <span class="text-xs text-zinc-400 font-mono">SNKB Production Studio (India)</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          {/* Machine Badge */}
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-zinc-950 rounded-lg border border-zinc-800 text-[11px] font-mono text-zinc-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Print Fleet Online</span>
+          </div>
+
+          {/* Admin User Pill */}
+          <div class="flex items-center gap-2 pl-3 border-l border-zinc-800">
+            <div class="w-7 h-7 rounded-full bg-[#FF6500]/20 border border-[#FF6500]/50 flex items-center justify-center text-[#FF6500] font-bold text-xs">
+              AD
+            </div>
+            <div class="text-xs">
+              <span class="font-semibold text-zinc-200 block leading-tight">Admin Console</span>
+              <span class="text-[10px] text-zinc-500 block leading-tight">Session Active</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Body */}
+      <main class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+        <slot />
+      </main>
+    </div>
+
+    <script>
+      // Admin off-canvas sidebar controller (< lg)
+      (() => {
+        const toggle = document.getElementById('admin-menu-toggle');
+        const sidebar = document.getElementById('admin-sidebar');
+        const backdrop = document.getElementById('admin-sidebar-backdrop');
+        if (!toggle || !sidebar) return;
+
+        const setOpen = (open) => {
+          sidebar.classList.toggle('-translate-x-full', !open);
+          backdrop?.classList.toggle('hidden', !open);
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+
+        toggle.addEventListener('click', () => setOpen(sidebar.classList.contains('-translate-x-full')));
+        backdrop?.addEventListener('click', () => setOpen(false));
+        sidebar.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+        window.addEventListener('resize', () => { if (window.innerWidth >= 1024) setOpen(false); });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,204 @@
+---
+import '../styles/global.css';
+import AnimatedBackground from '../components/AnimatedBackground.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "SNKB 3D Printing — Precision FDM Manufacturing & Instant Quoting India",
+  description = "Custom 3D printing in India. Instant STL geometric quoting, tough PLA+ engineering filaments, and bespoke product manufacturing with Pan-India delivery."
+} = Astro.props;
+
+// Shared primary navigation: desktop bar + mobile drawer read the same source
+// so the two can never drift apart.
+const navLinks = [
+  { href: '#instant-quote', label: 'Instant 3D Quote' },
+  { href: '#process', label: 'How It Works' },
+  { href: '#products', label: 'Trending Catalog' },
+  { href: '#materials', label: 'Materials Lab' },
+  { href: '#specs', label: 'Capabilities' },
+  { href: '/track/sample', label: 'Track Order' },
+];
+---
+
+<!doctype html>
+<html lang="en" class="bg-[#121315] text-zinc-100 antialiased selection:bg-[#FF6500] selection:text-black">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen flex flex-col bg-[#121315] text-zinc-100 font-sans relative">
+    {/* Animated Background Atmosphere */}
+    <AnimatedBackground />
+
+    {/* Navigation */}
+    <header class="sticky top-0 z-50 border-b border-[#2b2e36] bg-[#121315]/85 backdrop-blur-xl">
+      <div class="w-full max-w-[95vw] xl:max-w-[92vw] 2xl:max-w-[1800px] mx-auto px-3 sm:px-6 lg:px-10 h-16 flex items-center justify-between gap-3">
+        <a href="/" class="flex items-center gap-3 group min-w-0">
+          <div class="w-9 h-9 shrink-0 cut-sm bg-gradient-to-br from-[#FF6500] via-[#cc5200] to-[#3a3d45] flex items-center justify-center shadow-lg shadow-orange-900/40 group-hover:scale-105 transition duration-150">
+            <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <span class="font-bold text-base tracking-tight text-white block group-hover:text-[#FF6500] transition truncate">SNKB 3D Studio</span>
+            <span class="text-[10px] text-[#00FF66] font-mono tracking-wider uppercase block font-semibold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#00FF66] animate-pulse"></span>
+              Pan-India 3D Studio
+            </span>
+          </div>
+        </a>
+
+        <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-zinc-300">
+          {navLinks.slice(0, 5).map((link) => (
+            <a href={link.href} class="hover:text-white transition hover:scale-105">{link.label}</a>
+          ))}
+        </nav>
+
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          <a
+            href="#instant-quote"
+            class="btn-mech btn-primary cut-sm px-3 sm:px-4 py-2 text-xs whitespace-nowrap"
+          >
+            <span class="hidden xs:inline sm:hidden lg:inline">Upload </span>.STL
+          </a>
+
+          {/* Hamburger — mobile / tablet (< 1024px), min 44x44px tap target */}
+          <button
+            type="button"
+            id="mobile-nav-toggle"
+            class="lg:hidden btn-mech cut-sm min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-100 cursor-pointer"
+            aria-label="Open navigation menu"
+            aria-expanded="false"
+            aria-controls="mobile-nav-drawer"
+          >
+            <svg id="mobile-nav-icon-open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <svg id="mobile-nav-icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="h-[3px] stripes-hazard-thin opacity-70"></div>
+
+      {/* Mobile slide-down navigation drawer (< lg) */}
+      <div
+        id="mobile-nav-drawer"
+        class="lg:hidden absolute left-0 right-0 top-full border-b border-[#2b2e36] bg-[#0e0f12]/95 backdrop-blur-xl shadow-2xl"
+      >
+        <nav class="mx-auto max-w-[95vw] px-4 py-3 grid grid-cols-1 gap-1" aria-label="Mobile primary">
+          {navLinks.map((link) => (
+            <a
+              href={link.href}
+              class="flex items-center justify-between min-h-[48px] px-3 py-2.5 border border-transparent cut-sm text-sm font-semibold text-zinc-200 hover:text-white hover:border-[#FF6500]/60 hover:bg-[#FF6500]/10 transition"
+            >
+              <span>{link.label}</span>
+              <span class="text-[#FF6500] font-mono">→</span>
+            </a>
+          ))}
+          <a
+            href="#instant-quote"
+            class="mt-2 flex items-center justify-center gap-2 min-h-[48px] px-4 py-2.5 cut-sm btn-mech btn-primary text-sm font-bold"
+          >
+            <span>Upload .STL &amp; Get Instant Quote</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    {/* Main Content */}
+    <main class="flex-1 relative z-10">
+      <slot />
+    </main>
+
+    {/* Footer */}
+    <footer class="border-t border-[#2b2e36] bg-[#0e0f12]/90 backdrop-blur-md py-10 sm:py-12 text-zinc-400 text-xs relative z-10">
+      <div class="h-[3px] stripes-hazard-thin opacity-60 -mt-12 mb-8"></div>
+      <div class="w-full max-w-[95vw] xl:max-w-[92vw] 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
+          <div class="space-y-3">
+            <span class="font-semibold text-zinc-200 text-sm">SNKB 3D Printing Business</span>
+            <p class="text-zinc-400 leading-relaxed">
+              Precision prototyping and on-demand additive manufacturing delivering across India with high-speed precision motion systems.
+            </p>
+          </div>
+
+          <div>
+            <span class="font-semibold text-zinc-200 text-sm block mb-3">Manufacturing Capabilities</span>
+            <ul class="space-y-1.5 font-mono text-[11px] text-zinc-400">
+              <li>• Multi-Printer Farm & Scalable Formats</li>
+              <li>• Nozzle: 0.4 mm Stainless/Hardened</li>
+              <li>• Motion: Linear Rails + CoreXY Precision</li>
+              <li>• Auto Bed Leveling & Flow Calibration</li>
+            </ul>
+          </div>
+
+          <div>
+            <span class="font-semibold text-zinc-200 text-sm block mb-3">Filament Standards</span>
+            <ul class="space-y-1.5 text-zinc-400">
+              <li>• Material: High-Toughness PLA+ / PETG</li>
+              <li>• Density: 1.24 g/cm³</li>
+              <li>• Transparent Rates: From ₹2.00 / g</li>
+              <li>• Layer Heights: 0.08mm - 0.28mm</li>
+            </ul>
+          </div>
+
+          <div>
+            <span class="font-semibold text-zinc-200 text-sm block mb-3">Quick Navigation</span>
+            <ul class="space-y-1.5 text-zinc-400">
+              <li><a href="#instant-quote" class="hover:text-zinc-200">Instant 3D STL Quoting</a></li>
+              <li><a href="#process" class="hover:text-zinc-200">Production Workflow</a></li>
+              <li><a href="#products" class="hover:text-zinc-200">Catalog Designs</a></li>
+              <li><a href="#materials" class="hover:text-zinc-200">Material Guides</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pt-8 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-400 text-[11px]">
+          <p>© {new Date().getFullYear()} SNKB 3D Printing Business. All rights reserved.</p>
+          <p class="font-mono text-zinc-400">Pan-India Delivery • Precision Additive Prototyping</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Mobile navigation drawer controller (< lg). Auto-closes on link tap,
+      // Escape, or when the viewport grows back to the desktop breakpoint.
+      (() => {
+        const toggle = document.getElementById('mobile-nav-toggle') as HTMLButtonElement | null;
+        const drawer = document.getElementById('mobile-nav-drawer');
+        const iconOpen = document.getElementById('mobile-nav-icon-open');
+        const iconClose = document.getElementById('mobile-nav-icon-close');
+        if (!toggle || !drawer) return;
+
+        const setOpen = (open: boolean) => {
+          drawer.classList.toggle('is-open', open);
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+          toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+          if (iconOpen) iconOpen.classList.toggle('hidden', open);
+          if (iconClose) iconClose.classList.toggle('hidden', !open);
+        };
+
+        toggle.addEventListener('click', () => setOpen(!drawer.classList.contains('is-open')));
+        drawer.querySelectorAll('a').forEach((link) => {
+          link.addEventListener('click', () => setOpen(false));
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') setOpen(false);
+        });
+        window.addEventListener('resize', () => {
+          if (window.innerWidth >= 1024) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>

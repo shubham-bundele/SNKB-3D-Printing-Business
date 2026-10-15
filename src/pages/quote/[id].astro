@@ -1,0 +1,57 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SharedQuoteView from '../../components/SharedQuoteView.jsx';
+import { listOrders, getOrderById } from '../../db/database';
+
+export async function getStaticPaths() {
+  const orders = await listOrders();
+  const paths = orders.map((order) => ({
+    params: { id: String(order.id) },
+    props: { initialQuote: order },
+  }));
+
+  if (!paths.some((p) => p.params.id === 'sample')) {
+    paths.push({
+      params: { id: 'sample' },
+      props: {
+        initialQuote: {
+          id: 'SAMPLE',
+          fileName: 'hex_planter_reservoir.stl',
+          volumeMm3: 62500,
+          weightG: 77.5,
+          dimensions: { x: 142, y: 142, z: 110 },
+          quotedPrice: 458.0,
+          color: 'Concrete Grey',
+          notes: JSON.stringify({
+            type: 'SHARED_QUOTE_DRAFT',
+            material: 'pla',
+            profile: 'standard',
+            quantity: 1,
+            addOns: { buildPlateTexture: 'textured_pei', heatSetInserts: 0, supportSanding: false },
+          }),
+        },
+      },
+    });
+  }
+
+  return paths;
+}
+
+const { id } = Astro.params;
+const initialQuote = Astro.props.initialQuote || (id && id !== 'sample' ? await getOrderById(id) : null);
+---
+
+<Layout title={`3D Additive Quote #${id || ''} — SNKB 3D Studio`}>
+  <div class="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <!-- Breadcrumbs -->
+    <div class="max-w-4xl mx-auto mb-6 flex items-center gap-2 text-xs text-zinc-500 font-mono">
+      <a href="/" class="hover:text-zinc-300 transition">Storefront</a>
+      <span>/</span>
+      <span class="text-zinc-300">Shared 3D Quote</span>
+      <span>/</span>
+      <span class="text-[#FF6500] font-semibold">#{id}</span>
+    </div>
+
+    <SharedQuoteView client:load initialQuote={initialQuote} quoteId={id} />
+  </div>
+</Layout>

@@ -1,0 +1,64 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TrackingView from '../../components/TrackingView.jsx';
+import { listOrders, getPublicOrderById } from '../../db/database';
+
+export async function getStaticPaths() {
+  const orders = await listOrders();
+  const paths = await Promise.all(
+    orders.map(async (order) => ({
+      params: { id: String(order.id) },
+      props: { initialOrder: await getPublicOrderById(order.id) },
+    }))
+  );
+
+  // Ensure sample fallback exists for static prerendering
+  if (!paths.some((p) => p.params.id === 'sample')) {
+    paths.push({
+      params: { id: 'sample' },
+      props: {
+        initialOrder: {
+          id: 'SAMPLE',
+          customerName: 'Alex Chen',
+          customerEmail: 'alex.chen@example.com',
+          fileName: 'hex_planter_reservoir.stl',
+          volumeMm3: 62500,
+          weightG: 77.5,
+          dimensions: { x: 142, y: 142, z: 110 },
+          quotedPrice: 458.0,
+          deliveryCharge: 99.0,
+          deliveryPincode: '110001',
+          deliveryZone: 'metro',
+          grandTotal: 557.0,
+          paymentMode: 'Prepaid',
+          status: 'Printing',
+          color: 'Concrete Grey',
+          notes: 'High wall density requested.',
+          createdAt: new Date().toISOString(),
+        },
+      },
+    });
+  }
+
+  return paths;
+}
+
+const { id } = Astro.params;
+const initialOrder = Astro.props.initialOrder || (id ? await getPublicOrderById(id) : null);
+---
+
+<Layout title={`Order Tracking #${id || ''} — SNKB 3D Studio`}>
+  <div class="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    {/* Breadcrumbs */}
+    <div class="max-w-4xl mx-auto mb-6 flex items-center gap-2 text-xs text-zinc-500 font-mono">
+      <a href="/" class="hover:text-zinc-300 transition">Storefront</a>
+      <span>/</span>
+      <span class="text-zinc-300">Order Tracking</span>
+      <span>/</span>
+      <span class="text-indigo-400 font-semibold">#{id}</span>
+    </div>
+
+    {/* Interactive Tracking Island */}
+    <TrackingView client:load initialOrder={initialOrder} orderId={id} />
+  </div>
+</Layout>

@@ -1,0 +1,704 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+}
+
+/* CAD & Blueprint Blueprint Grid Backgrounds */
+.cad-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.cad-dots-bg {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Custom Keyframe Animations */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(1.5deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes shimmerSlide {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes orbitSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatSlow 9s ease-in-out 3s infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 5s ease-in-out infinite;
+}
+
+.animate-orbit-spin {
+  animation: orbitSpin 20s linear infinite;
+}
+
+.text-gradient-shimmer {
+  background: linear-gradient(90deg, #818cf8 0%, #38bdf8 25%, #34d399 50%, #38bdf8 75%, #818cf8 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmerSlide 6s linear infinite;
+}
+
+/* Glassmorphic Panels */
+.glass-panel {
+  background: rgba(18, 18, 24, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-glow {
+  background: rgba(24, 24, 32, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 35px -8px rgba(99, 102, 241, 0.2);
+}
+
+/* Neon Glow Accents */
+.glow-cyan {
+  box-shadow: 0 0 25px -4px rgba(56, 189, 248, 0.35);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 25px -4px rgba(52, 211, 153, 0.35);
+}
+
+.glow-indigo {
+  box-shadow: 0 0 30px -4px rgba(99, 102, 241, 0.4);
+}
+
+/* ==============================================================================
+   SNKB INDUSTRIAL CAD DASHBOARD THEME
+   Deep charcoal/steel (#121315) · safety orange (#FF6500) · laser green (#00FF66)
+   ============================================================================== */
+:root {
+  --ind-ink: #121315;
+  --ind-panel: #17181d;
+  --ind-panel-2: #1c1e24;
+  --ind-line: #2b2e36;
+  --ind-safety: #ff6500;
+  --ind-laser: #00ff66;
+  --ind-amber: #ffb020;
+  --ind-text: #eceef1;
+  --ind-dim: #9aa0a8;
+}
+
+/* Full-bleed industrial backdrop: charcoal + fine engineering grid */
+.ind-stage {
+  background-color: var(--ind-ink);
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+}
+
+/* Glass-morphism industrial panel */
+.panel-ind {
+  background: rgba(23, 24, 29, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel-ind-deep {
+  background: rgba(14, 15, 18, 0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Angled-corner clip for buttons, badges, switches (borderless elements) */
+.cut-sm {
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.cut-md {
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+/* Hazard warning stripes (upload zones, footer rails) */
+.stripes-hazard {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ind-safety) 0 12px,
+    #151517 12px 24px
+  );
+}
+.stripes-hazard-thin {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 101, 0, 0.85) 0 8px,
+    rgba(10, 10, 12, 0.9) 8px 16px
+  );
+}
+
+/* Telemetry microcopy */
+.telemetry {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.telemetry-dim { color: var(--ind-dim); }
+.telemetry-laser { color: var(--ind-laser); }
+.telemetry-safety { color: var(--ind-safety); }
+
+/* Mechanical buttons: fast tactical transitions, border overlays, hover lift */
+.btn-mech {
+  position: relative;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--ind-line);
+  background: linear-gradient(180deg, #23252c 0%, #17181d 100%);
+  color: var(--ind-text);
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+.btn-mech:hover:not(:disabled) {
+  border-color: var(--ind-safety);
+  filter: drop-shadow(0 0 6px rgba(255, 101, 0, 0.55));
+  transform: translateY(-1px);
+}
+.btn-mech:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn-mech:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: linear-gradient(180deg, #ff7a1f 0%, #e85a00 100%);
+  border-color: #ff8c3a;
+  color: #16110b;
+  filter: drop-shadow(0 6px 14px rgba(255, 101, 0, 0.35));
+}
+.btn-primary:hover:not(:disabled) {
+  border-color: #ffc79a;
+  filter: drop-shadow(0 0 10px rgba(255, 101, 0, 0.65));
+  transform: translateY(-1px);
+}
+.btn-ghost-green:hover:not(:disabled) {
+  border-color: var(--ind-laser);
+  filter: drop-shadow(0 0 6px rgba(0, 255, 102, 0.5));
+}
+
+/* Tactical inputs: steel wells with orange focus + telemetry labels */
+.field-mech {
+  background: #0e0f12;
+  border: 1px solid var(--ind-line);
+  color: var(--ind-text);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.field-mech::placeholder { color: #5b6068; }
+.field-mech:focus {
+  outline: none;
+  border-color: var(--ind-safety);
+  box-shadow: 0 0 0 1px rgba(255, 101, 0, 0.5);
+}
+
+/* Tactical toggle switch (square industrial track) */
+.switch-tactical input:checked + .switch-track {
+  background: var(--ind-safety);
+  border-color: #ff8c3a;
+}
+.switch-tactical input:checked + .switch-track .switch-knob {
+  transform: translateX(20px);
+  background: #141414;
+}
+
+/* CAD coordinate scale rails (viewport frame rulers) */
+.cad-ruler-x {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.22) 0 1px,
+    transparent 1px 12px
+  );
+  background-size: 100% 6px;
+  background-repeat: no-repeat;
+  background-position: bottom;
+}
+.cad-ruler-y {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.22) 0 1px,
+    transparent 1px 12px
+  );
+  background-size: 6px 100%;
+  background-repeat: no-repeat;
+  background-position: right;
+}
+
+/* Floating 3D coordinate tags (positioned per-frame from JS projection) */
+.tag-3d {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  background: rgba(10, 11, 14, 0.88);
+  border: 1px solid rgba(0, 255, 102, 0.55);
+  color: #d7ffe6;
+  z-index: 20;
+}
+.tag-3d::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 5px;
+  height: 5px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--ind-laser);
+}
+.tag-3d-rose {
+  border-color: rgba(255, 81, 71, 0.7);
+  color: #ffd9d6;
+}
+.tag-3d-rose::before {
+  background: #ff5147;
+}
+
+/* Rapid number tick flash on value change */
+@keyframes tickFlash {
+  0% { text-shadow: 0 0 14px rgba(255, 101, 0, 0.9); }
+  100% { text-shadow: none; }
+}
+.tick-flash {
+  animation: tickFlash 350ms ease-out;
+}
+
+/* ==============================================================================
+   CAD DASHBOARD VISUAL FIDELITY ENHANCEMENTS
+   Metallic 3D Logo · Dual-tone Swatch · Tactical D-Pad · Reticle Tags · CAD Frame
+   ============================================================================== */
+.logo-snkb {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  background: linear-gradient(180deg, #ffffff 0%, #d8dce2 45%, #8c919b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+}
+.logo-3d-studio {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #ff6500;
+  text-shadow: 0 0 14px rgba(255, 101, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Tactical Dual-Tone Material Swatch Dial */
+.swatch-split {
+  width: 46px;
+  height: 46px;
+  border-radius: 9999px;
+  border: 2px solid var(--swatch-color, #ff6500);
+  background: linear-gradient(135deg, var(--swatch-color, #ff6500) 0%, var(--swatch-color, #ff6500) 50%, #1e2025 50%, #121316 100%);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 0 14px var(--swatch-glow, rgba(255, 101, 0, 0.4));
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  outline: none;
+}
+.swatch-split:hover {
+  transform: scale(1.08) rotate(15deg);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 0 22px var(--swatch-glow, rgba(255, 101, 0, 0.7));
+}
+.swatch-split:active {
+  transform: scale(0.95);
+}
+.swatch-split:focus-visible {
+  outline: 2px solid #00ff66;
+  outline-offset: 3px;
+}
+.swatch-split::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 9999px;
+  border: 1px dashed var(--swatch-glow, rgba(255, 101, 0, 0.4));
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+}
+
+/* Tactical 5-Way D-Pad for 3D Camera Manipulation */
+.dpad-container {
+  display: grid;
+  grid-template-columns: repeat(3, 24px);
+  grid-template-rows: repeat(3, 24px);
+  gap: 2px;
+  padding: 4px;
+  background: rgba(14, 15, 18, 0.9);
+  border: 1px solid #2b2e36;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+.dpad-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #9aa0a8;
+  background: #1c1e24;
+  border: 1px solid #2b2e36;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 100ms ease;
+  user-select: none;
+}
+.dpad-btn:hover {
+  background: #282b34;
+  color: #00ff66;
+  border-color: #00ff66;
+  box-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
+}
+.dpad-btn:active {
+  transform: scale(0.92);
+  background: #ff6500;
+  color: #000;
+}
+
+/* Floating Vertical Tool Strip */
+.tool-strip-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(18, 19, 23, 0.88);
+  border: 1px solid #2b2e36;
+  color: #9aa0a8;
+  border-radius: 4px;
+  transition: all 120ms ease;
+  font-size: 13px;
+}
+.tool-strip-btn:hover {
+  border-color: #00ff66;
+  color: #00ff66;
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.35);
+  transform: translateX(-1px);
+}
+.tool-strip-btn.active {
+  border-color: #ff6500;
+  color: #ff6500;
+  background: rgba(255, 101, 0, 0.12);
+  box-shadow: 0 0 8px rgba(255, 101, 0, 0.4);
+}
+
+/* Reticle corner ticks for 3D projected tags */
+.tag-3d-reticle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  background: rgba(10, 11, 14, 0.92);
+  border: 1px solid rgba(0, 255, 102, 0.7);
+  color: #d7ffe6;
+  z-index: 20;
+  box-shadow: 0 0 10px rgba(0, 255, 102, 0.25);
+}
+.tag-3d-reticle::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid #00ff66;
+  border-left: 2px solid #00ff66;
+}
+.tag-3d-reticle::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  border-bottom: 2px solid #00ff66;
+  border-right: 2px solid #00ff66;
+}
+.tag-3d-reticle-rose {
+  border-color: rgba(255, 81, 71, 0.85);
+  color: #ffd9d6;
+  box-shadow: 0 0 12px rgba(255, 81, 71, 0.35);
+}
+.tag-3d-reticle-rose::before {
+  border-color: #ff5147;
+}
+.tag-3d-reticle-rose::after {
+  border-color: #ff5147;
+}
+
+/* Vertical LED tick bar for dropzone sides */
+.led-tick-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.led-tick {
+  width: 3px;
+  height: 8px;
+  background: #2b2e36;
+  border-radius: 1px;
+}
+.led-tick.active-green {
+  background: #00ff66;
+  box-shadow: 0 0 6px #00ff66;
+}
+.led-tick.active-orange {
+  background: #ff6500;
+  box-shadow: 0 0 6px #ff6500;
+}
+
+/* ==========================================================================
+   Print / Official B2B Invoice Styles (@media print)
+   ========================================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  nav,
+  footer,
+  .no-print,
+  #ambient-background,
+  button,
+  .glass-panel:not(#printable-invoice) {
+    display: none !important;
+  }
+
+  #printable-invoice {
+    display: block !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: 2px solid #000000 !important;
+    padding: 24px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4 portrait;
+  }
+}
+
+/* ==========================================================================
+   Module 2: Tactile Cyber-Workshop & Bento HUD Design System
+   ========================================================================== */
+.quick-ticker-badge {
+  background: rgba(14, 15, 19, 0.92);
+  border: 1px solid rgba(255, 101, 0, 0.35);
+  box-shadow: 0 0 20px -4px rgba(255, 101, 0, 0.2);
+}
+
+.hud-bracket-btn {
+  position: relative;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hud-bracket-btn:hover {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 0 12px rgba(255, 101, 0, 0.55));
+}
+.hud-bracket-btn:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   Module 3: Unified Bento Cockpit Grid (3-column #instant-quote layout)
+   ========================================================================== */
+
+/* Independently scrollable cockpit columns with matched heights */
+.cockpit-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 101, 0, 0.45) transparent;
+  overscroll-behavior: contain;
+}
+.cockpit-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.cockpit-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+.cockpit-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 101, 0, 0.4);
+  border-radius: 4px;
+}
+.cockpit-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 101, 0, 0.65);
+}
+
+/* Cached WebGL snapshot shown on off-screen catalog cards */
+.catalog-snapshot-img {
+  background: #0c0e12;
+}
+
+/* ==========================================================================
+   Module 4: Mobile-First Responsive Hardening (360px phone -> 1680px wide)
+   ========================================================================== */
+
+/* Global viewport protection — kills horizontal scroll leaks on phones.
+   `overflow-x: clip` (NOT hidden) keeps `position: sticky` headers working. */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100vw;
+}
+
+/* Swipeable horizontal rails that hide their scrollbar (touch ribbons, pills) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Snap alignment helper for touch ribbons */
+.touch-rail {
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.touch-rail > * {
+  scroll-snap-align: start;
+}
+
+/* iOS Safari auto-zooms any focused field < 16px. Force 16px on every
+   text-entry control on phones only (desktop keeps its compact sizing),
+   regardless of the compact Tailwind size utility applied to it. */
+@media (max-width: 767px) {
+  input:not([type='range']):not([type='checkbox']):not([type='radio']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  /* Mobile checkout / config fields are also full-width for thumb reach */
+  input.field-mech,
+  select.field-mech,
+  textarea.field-mech {
+    width: 100%;
+  }
+}
+
+/* Mobile navigation drawer (< lg): slide-down origin-top reveal */
+#mobile-nav-drawer {
+  transform: translateY(-8px) scaleY(0.98);
+  transform-origin: top center;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease;
+}
+#mobile-nav-drawer.is-open {
+  transform: translateY(0) scaleY(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Mobile slicer touch ribbons: comfortable 38px tap targets, no wrap */
+@media (max-width: 1023px) {
+  .slicer-ribbon button {
+    min-height: 38px;
+    white-space: nowrap;
+  }
+}
+
+/* Capture-phase safe-area cushion for the fixed mobile checkout bar */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* Locked 3D viewport: one finger scrolls the page instead of orbiting */
+.touch-locked {
+  touch-action: pan-y;
+}
+
+/* Floating "3D Touch" scroll-lock pill (injected by viewerTouchControls.js on
+   coarse-pointer devices only). Styled here so Tailwind never purges it. */
+.viewer-touch-lock {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 20px);
+  padding: 7px 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: left;
+  color: #eceef1;
+  background: rgba(10, 11, 14, 0.82);
+  border: 1px solid rgba(255, 101, 0, 0.55);
+  border-radius: 9999px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 140ms ease, color 140ms ease;
+}
+.viewer-touch-lock.is-orbiting {
+  border-color: rgba(0, 255, 102, 0.65);
+  color: #d7ffe6;
+}
+
+

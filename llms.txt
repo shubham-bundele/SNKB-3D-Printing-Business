@@ -1,0 +1,32 @@
+# SNKB 3D Studio
+
+> High-precision custom 3D printing and instant quoting platform engineered for rapid prototyping and production parts across India.
+
+## Overview
+- **Domain**: Additive manufacturing, rapid prototyping, and production parts in India.
+- **Location & Dispatch**: Pan-India courier fulfillment (Delhivery, Blue Dart, DTDC) with express 2–4 business days delivery.
+- **Currency**: Indian Rupee (INR, ₹).
+- **Materials**: Tough PLA+ (density 1.24 g/cm³) and Technical PETG.
+- **Precision**: 0.08 mm – 0.28 mm layer heights with ±0.1 mm dimensional tolerance.
+- **Build Volume**: Scalable multi-printer production farm handling parts up to 180×180×180 mm per part (large assemblies partitioned in farm queue).
+
+## Pricing & Economics (GST-Inclusive)
+- **Base Material Rate**: ₹2.00 / gram (PLA+).
+- **Machine Run Rate**: ₹25.00 / print-hour (12 g/hr throughput estimate).
+- **Post-Processing / Labor**: ₹1.00 / gram (support removal, deburring, inspection).
+- **Fixed Service Fee**: ₹39.00 (slicing setup, platform prep, QA).
+- **Packaging & Handling**: ₹25.00 (box, cushioning, desiccant pouch, shipping labels).
+- **Minimum Order Value**: ₹149.00 floor.
+- **Delivery Model**: Flat ₹99.00 standard Pan-India courier (scales to ₹149/₹199 for heavier parcels; free on orders ≥ ₹499.00).
+
+## API Endpoints
+- `GET /api/health`: Service health check.
+- `POST /api/quote`: Accepts `.stl` upload (multipart/form-data), calculates volume & weight via divergence theorem, returns itemized INR quote and pending order ID.
+- `GET /api/orders/delivery?pincode=110001&weight=77.5`: Calculates courier delivery fee and returns grand total.
+- `POST /api/orders/confirm`: Finalizes order with customer details, color choice, delivery pincode, and payment mode (Prepaid / COD).
+- `GET /api/orders/:id`: Sanitized public order tracking endpoint.
+- `GET /api/admin/orders`: Operations queue for order management and fulfillment.
+
+## Documentation Links
+- [Agent Handoff & Architecture](file:///d:/Projects/SNKB%203D%20Printing%20Business/AGENT_HANDOFF.md): Detailed full-stack architecture, database schemas, test coverage, and changelog.
+- [Project Readme](file:///d:/Projects/SNKB%203D%20Printing%20Business/README.md): Quick start guide and development workflow.

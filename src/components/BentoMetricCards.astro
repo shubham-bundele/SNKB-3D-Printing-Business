@@ -1,0 +1,222 @@
+---
+/**
+ * src/components/BentoMetricCards.astro
+ *
+ * Interactive Tactile Hardware Bento Cards with:
+ * - Chamfered corners (cut-sm)
+ * - Subtle radial spotlight hover tracking (follows cursor x, y)
+ * - Animated number counters (animating on intersection)
+ * - Live printer farm status badges with temperature & telemetry
+ */
+
+const cards = [
+  {
+    id: 'capacity',
+    code: 'CAPACITY_01',
+    badgeStatus: 'A1 MINI #01: READY • 215°C NOZZLE / 60°C PEI BED',
+    badgeColor: 'text-[#00FF66] bg-[#00FF66]/10 border-[#00FF66]/30',
+    dotColor: 'bg-[#00FF66]',
+    category: 'Production Capacity',
+    target: 12,
+    decimals: 0,
+    prefix: '',
+    suffix: '+ Units',
+    displayTitle: 'Scalable Multi-Printer Farm',
+    description: 'High-throughput continuous queues & multi-format beds',
+    accentColor: '#FF6500',
+  },
+  {
+    id: 'material',
+    code: 'MATERIAL_02',
+    badgeStatus: 'A1 MINI #02: PRINTING • 220°C NOZZLE / 65°C PEI BED',
+    badgeColor: 'text-sky-400 bg-sky-950/40 border-sky-800/40',
+    dotColor: 'bg-sky-400',
+    category: 'Filament Material',
+    target: 1.24,
+    decimals: 2,
+    prefix: '',
+    suffix: ' g/cm³',
+    displayTitle: 'Tough PLA+ (1.24 g/cm³)',
+    description: 'High rigidity & smooth satin finish • Impact modified',
+    accentColor: '#38bdf8',
+  },
+  {
+    id: 'precision',
+    code: 'PRECISION_03',
+    badgeStatus: 'A1 MINI #03: CALIBRATED • 0.4mm HARDENED NOZZLE',
+    badgeColor: 'text-[#00FF66] bg-[#00FF66]/10 border-[#00FF66]/30',
+    dotColor: 'bg-[#00FF66]',
+    category: 'Layer Precision',
+    target: 0.1,
+    decimals: 1,
+    prefix: '±',
+    suffix: ' mm',
+    displayTitle: '0.08 – 0.28 mm (±0.1 mm)',
+    description: 'Industrial tolerance & snap-fit joint precision',
+    accentColor: '#00FF66',
+  },
+  {
+    id: 'pricing',
+    code: 'PRICING_04',
+    badgeStatus: 'BILLING TELEMETRY: GST INCLUSIVE • ZERO HIDDEN FEES',
+    badgeColor: 'text-[#00FF66] bg-[#00FF66]/10 border-[#00FF66]/30',
+    dotColor: 'bg-[#00FF66]',
+    category: 'Cost Transparency',
+    target: 2.0,
+    decimals: 2,
+    prefix: '₹',
+    suffix: ' /g',
+    displayTitle: 'Starting at ₹2.00 / gram',
+    description: 'Itemized INR billing · Zero hidden fees · Minimum ₹149',
+    accentColor: '#00FF66',
+  },
+];
+---
+
+<div class="bento-cards-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+  {cards.map((card) => (
+    <div
+      class="bento-hud-card relative p-4 sm:p-5 cut-sm panel-ind overflow-hidden transition-all duration-200 cursor-default group"
+      data-card-id={card.id}
+    >
+      {/* Corner HUD Bracket & Code */}
+      <div class="flex items-center justify-between text-[9px] font-mono text-zinc-500 mb-2">
+        <span class="telemetry text-zinc-400 group-hover:text-[#FF6500] transition-colors">{card.category}</span>
+        <span class="text-zinc-600 font-mono tracking-wider">[{card.code}]</span>
+      </div>
+
+      {/* Live Printer Farm Status Badge */}
+      <div class={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-mono mb-3 ${card.badgeColor}`}>
+        <span class={`w-1.5 h-1.5 rounded-full ${card.dotColor} animate-pulse`}></span>
+        <span class="tracking-tight truncate">{card.badgeStatus}</span>
+      </div>
+
+      {/* Animated Number Counter */}
+      <div class="flex items-baseline gap-1 my-1">
+        <span
+          class="bento-counter text-2xl sm:text-3xl font-extrabold font-mono text-white tracking-tight"
+          data-target={card.target}
+          data-decimals={card.decimals}
+          data-prefix={card.prefix}
+          data-suffix={card.suffix}
+        >
+          {card.prefix}{card.target.toFixed(card.decimals)}{card.suffix}
+        </span>
+      </div>
+
+      {/* Title & Description */}
+      <div class="text-xs font-semibold text-zinc-200 font-mono mt-1 group-hover:text-white transition-colors">
+        {card.displayTitle}
+      </div>
+      <div class="text-[11px] text-zinc-400 mt-1 leading-relaxed">
+        {card.description}
+      </div>
+
+      {/* Subtle Corner Caliper Accent */}
+      <div class="absolute bottom-1 right-2 text-[10px] font-mono text-zinc-700 pointer-events-none select-none">
+        +
+      </div>
+    </div>
+  ))}
+</div>
+
+<style>
+  .bento-hud-card {
+    position: relative;
+    background: rgba(22, 23, 28, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .bento-hud-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      320px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
+      rgba(255, 101, 0, 0.16),
+      transparent 50%
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    z-index: 1;
+  }
+
+  .bento-hud-card:hover::before {
+    opacity: 1;
+  }
+
+  .bento-hud-card:hover {
+    border-color: rgba(255, 101, 0, 0.45);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.6), 0 0 16px -4px rgba(255, 101, 0, 0.2);
+  }
+</style>
+
+<script>
+  function initBentoHudCards() {
+    // 1. Mouse-following spotlight tracking
+    const cards = document.querySelectorAll<HTMLElement>('.bento-hud-card');
+    cards.forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.setProperty('--mouse-x', '-500px');
+        card.style.setProperty('--mouse-y', '-500px');
+      });
+    });
+
+    // 2. Animated Number Counters on Viewport Entry
+    const counters = document.querySelectorAll<HTMLElement>('.bento-counter');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target as HTMLElement;
+          observer.unobserve(el);
+
+          const target = parseFloat(el.getAttribute('data-target') || '0');
+          const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+          const prefix = el.getAttribute('data-prefix') || '';
+          const suffix = el.getAttribute('data-suffix') || '';
+
+          const duration = 1200; // ms
+          const startTime = performance.now();
+
+          function updateNumber(currentTime: number) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // Ease-out cubic
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const currentVal = target * easeOut;
+
+            el.textContent = `${prefix}${currentVal.toFixed(decimals)}${suffix}`;
+
+            if (progress < 1) {
+              requestAnimationFrame(updateNumber);
+            } else {
+              el.textContent = `${prefix}${target.toFixed(decimals)}${suffix}`;
+            }
+          }
+
+          requestAnimationFrame(updateNumber);
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    counters.forEach((counter) => observer.observe(counter));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBentoHudCards);
+  } else {
+    initBentoHudCards();
+  }
+  document.addEventListener('astro:page-load', initBentoHudCards);
+</script>

@@ -1,0 +1,231 @@
+---
+/**
+ * src/components/HeroPrintStage.astro
+ *
+ * Interactive 3D Bambu Lab A1 Mini Build Volume Stage for the Hero Section.
+ * Features a glowing 180x180x180 mm build-volume cage, animated laser scan plane,
+ * solid 3D model, 4-model switcher, 5 filament swatches, and X-Ray Infill toggle.
+ */
+
+const sampleModels = [
+  {
+    id: 'mecha',
+    name: 'Mecha Figure',
+    stlUrl: '/models/posable-snap-fit-mecha.stl',
+    baseStlUrl: '/models/posable-snap-fit-mecha-base.stl',
+    accentStlUrl: '/models/posable-snap-fit-mecha-accent.stl',
+    partBase: 'Inner Ball-Joint Skeleton',
+    partAccent: 'Snap-On Armor Plates',
+    assemblyType: 'multi-part',
+    canExplode: true,
+    lockBadge: '',
+    defaultActive: true,
+  },
+  {
+    id: 'benchy',
+    name: '3DBenchy',
+    stlUrl: '/models/3dbenchy.stl',
+    baseStlUrl: '',
+    accentStlUrl: '',
+    partBase: '',
+    partAccent: '',
+    assemblyType: 'single-piece',
+    canExplode: false,
+    lockBadge: '🔒 SINGLE-PIECE SOLID PRINT — Item cannot be exploded.',
+    defaultActive: false,
+  },
+  {
+    id: 'dragon',
+    name: 'Crystal Dragon',
+    stlUrl: '/models/articulated-crystal-dragon.stl',
+    baseStlUrl: '',
+    accentStlUrl: '',
+    partBase: '',
+    partAccent: '',
+    assemblyType: 'print-in-place',
+    canExplode: false,
+    lockBadge: '🔒 PRINT-IN-PLACE MONOLITH — Hinges print pre-assembled; item cannot be exploded.',
+    defaultActive: false,
+  },
+  {
+    id: 'bearing',
+    name: 'Gear Bearing',
+    stlUrl: '/models/planetary-gear-fidget-spinner.stl',
+    baseStlUrl: '/models/planetary-gear-fidget-spinner-base.stl',
+    accentStlUrl: '/models/planetary-gear-fidget-spinner-accent.stl',
+    partBase: 'Sun + Planet Gears',
+    partAccent: 'Outer Ring Housing',
+    assemblyType: 'multi-part',
+    canExplode: true,
+    lockBadge: '',
+    defaultActive: false,
+  },
+];
+
+const filamentSwatches = [
+  { name: 'Bambu Orange', hex: '#FF6500', isDefault: true },
+  { name: 'Cyber Neon Green', hex: '#00FF66', isDefault: false },
+  { name: 'Matte Charcoal', hex: '#1E2229', isDefault: false },
+  { name: 'Glacier Cyan', hex: '#00E5FF', isDefault: false },
+  { name: 'Arctic White', hex: '#F3F4F6', isDefault: false },
+];
+---
+
+<div class="hero-print-stage relative w-full h-[280px] sm:h-[340px] lg:h-[420px] bg-[#0c0d11]/95 cut-sm border border-zinc-800/80 shadow-2xl flex flex-col justify-between overflow-hidden group">
+  {/* Top HUD Telemetry Bar */}
+  <div class="relative z-10 px-4 py-3 border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur-md flex items-center justify-between gap-3 text-xs">
+    <div class="flex items-center gap-2">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FF66] opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00FF66]"></span>
+      </span>
+      <span class="font-mono text-[11px] font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+        <span class="text-[#FF6500]">STAGE #01:</span> A1 MINI 180³ BED
+      </span>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="telemetry text-[10px] text-zinc-400 font-mono hidden sm:inline-block">
+        LASER SCAN: <span class="text-[#00FF66]">ACTIVE</span>
+      </span>
+      <span class="hero-tri-count telemetry text-[10px] text-[#00FF66] bg-[#00FF66]/10 px-2 py-0.5 border border-[#00FF66]/30 font-mono">
+        22,240 Tris
+      </span>
+    </div>
+  </div>
+
+  {/* Active Model & Coordinate Reticle Overlay */}
+  <div class="absolute top-14 left-4 z-10 pointer-events-none">
+    <div class="telemetry text-[9px] text-zinc-500 font-mono">ACTIVE TARGET</div>
+    <div class="hero-model-name text-sm font-bold text-white tracking-tight font-mono">
+      Posable Snap-Fit Mecha
+    </div>
+    <div class="text-[10px] text-zinc-400 font-mono mt-0.5">
+      180×180×180 mm PEI Spring Steel
+    </div>
+    <div class="hero-assembly-badge telemetry text-[9px] font-mono mt-1.5 px-2 py-1 rounded border border-[#00FF66]/40 bg-[#00FF66]/10 text-[#00FF66] max-w-[280px] leading-snug">
+      Multi-Plate Snap-Fit • 0g AMS Purge Waste
+    </div>
+  </div>
+
+  {/* Corner HUD Brackets */}
+  <div class="absolute top-12 right-4 z-10 pointer-events-none font-mono text-[10px] text-zinc-600">
+    [ 0–180 mm Z-AXIS ]
+  </div>
+
+  {/* 3D Canvas Area */}
+  <div class="hero-canvas-container relative flex-1 w-full min-h-0">
+    <canvas class="hero-stage-canvas w-full h-full block cursor-grab active:cursor-grabbing outline-none" style="display: block; width: 100%; height: 100%;"></canvas>
+
+    {/* Loading Overlay */}
+    <div class="hero-stage-loading absolute inset-0 flex flex-col items-center justify-center bg-[#0c0d11]/85 z-20 transition-opacity duration-300 pointer-events-none">
+      <div class="w-8 h-8 border-2 border-[#FF6500] border-t-transparent rounded-full animate-spin"></div>
+      <span class="telemetry text-[10px] text-zinc-400 mt-2 font-mono tracking-widest">
+        CALIBRATING BED &amp; MESH...
+      </span>
+    </div>
+  </div>
+
+  {/* Bottom Interactive Control Center (Try a Model + Swatches + X-Ray) */}
+  <div class="relative z-10 p-3 sm:p-4 border-t border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md flex flex-col gap-3">
+    {/* Model Switcher Bar — horizontally swipeable touch rail on mobile */}
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider hidden lg:inline shrink-0">
+        Try a Model:
+      </span>
+      <div class="flex overflow-x-auto no-scrollbar touch-rail snap-x items-center gap-2 pb-1 flex-1 min-w-0">
+        {sampleModels.map((m) => (
+          <button
+            type="button"
+            class={`model-switch-btn shrink-0 whitespace-nowrap min-h-[36px] cut-sm text-[11px] font-mono font-medium py-1.5 px-3 border transition-all text-center cursor-pointer ${
+              m.defaultActive
+                ? 'active border-[#FF6500] text-white bg-black/80 shadow-[0_0_10px_rgba(255,101,0,0.25)]'
+                : 'border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 bg-zinc-900/60'
+            }`}
+            data-id={m.id}
+            data-stl={m.stlUrl}
+            data-base-stl={m.baseStlUrl}
+            data-accent-stl={m.accentStlUrl}
+            data-part-base={m.partBase}
+            data-part-accent={m.partAccent}
+            data-name={m.name}
+            data-assembly-type={m.assemblyType}
+            data-can-explode={m.canExplode ? 'true' : 'false'}
+            data-lock-badge={m.lockBadge}
+            title={`Preview ${m.name} in live 3D stage`}
+          >
+            {m.name}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* Swatches + X-Ray Toggle + Slicer Transfer */}
+    <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-zinc-800/60">
+      {/* 5 Filament Swatches */}
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-[9px] font-mono text-zinc-500 uppercase hidden md:inline">Spool:</span>
+        <div class="flex items-center gap-1.5 bg-black/60 px-2 py-1 rounded-full border border-zinc-800">
+          {filamentSwatches.map((s) => (
+            <button
+              type="button"
+              class={`hero-swatch-pill w-4 h-4 rounded-full border border-white/20 transition-all cursor-pointer relative hover:scale-120 ${
+                s.isDefault ? 'ring-2 ring-white scale-110' : ''
+              }`}
+              style={`background-color: ${s.hex};`}
+              data-color={s.hex}
+              title={s.name}
+              aria-label={`Switch filament to ${s.name}`}
+            ></button>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Buttons: Explode Assembly, X-Ray & Send to Slicer */}
+      <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 overflow-x-auto no-scrollbar">
+        <button
+          type="button"
+          class="hero-explode-toggle-btn text-[10px] font-mono font-semibold px-2.5 py-1 cut-sm bg-zinc-900 text-zinc-300 border border-zinc-700 hover:border-[#FF6500] hover:text-[#FF6500] transition-all flex items-center gap-1.5 cursor-pointer shadow"
+          title="Toggle Exploded Assembly View (Separates multi-part plates with dashed alignment guides)"
+        >
+          <span>💥</span>
+          <span class="hero-explode-label">Explode Assembly</span>
+        </button>
+
+        <button
+          type="button"
+          class="view-mode-toggle-btn text-[10px] font-mono font-semibold px-2.5 py-1 cut-sm bg-zinc-900 text-zinc-300 border border-zinc-700 hover:border-[#00FF66] hover:text-[#00FF66] transition-all flex items-center gap-1.5 cursor-pointer shadow"
+          title="Toggle between Solid Surface and X-Ray Infill view"
+        >
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          <span class="view-mode-label">Solid Print View</span>
+        </button>
+
+        <button
+          type="button"
+          class="hero-send-slicer-btn text-[10px] font-mono font-bold px-3 py-1 cut-sm bg-[#FF6500] text-black hover:bg-[#ff7a1f] transition-all flex items-center gap-1 cursor-pointer shadow-md shadow-orange-900/30"
+          title="Transfer this model to the instant quoting 3D slicer arena"
+        >
+          <span>Slicer</span>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initHeroPrintStage } from './heroPrintStage.js';
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeroPrintStage);
+  } else {
+    initHeroPrintStage();
+  }
+  document.addEventListener('astro:page-load', initHeroPrintStage);
+</script>

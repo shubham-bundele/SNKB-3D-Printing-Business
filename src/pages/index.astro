@@ -1,0 +1,521 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SlicerIsland from '../components/SlicerIsland.jsx';
+import CatalogModelPreview from '../components/CatalogModelPreview.astro';
+import HeroPrintStage from '../components/HeroPrintStage.astro';
+import BentoMetricCards from '../components/BentoMetricCards.astro';
+import FilamentSpineTrack from '../components/FilamentSpineTrack.astro';
+import HudSectionDivider from '../components/HudSectionDivider.astro';
+import MaterialStressLab from '../components/MaterialStressLab.astro';
+import InteractiveProductionPipeline from '../components/InteractiveProductionPipeline.astro';
+import products from '../data/products.json';
+
+// SEO: page-level title + description emphasizing instant STL quoting,
+// high-precision additive manufacturing in India, and fast Pan-India delivery.
+const pageTitle = "SNKB 3D Studio — Custom 3D Printing & Instant STL Quoting | India";
+const pageDescription = "Upload your .stl for an instant 3D printing quote. High-precision 3D printing in tough PLA+ with fast Pan-India express delivery (±0.1 mm precision, 0.08–0.28 mm layers). ESP32 enclosures, keyboard gear & modular designs.";
+
+// Unified catalog: a single filterable 3-column grid (zero orphan cards).
+// Each product maps to one filter group via its categoryId so the pills stay
+// mutually exclusive and every default ("All Models") row is perfectly full.
+const catalogFilters = [
+  { id: "all", label: "All Models", catIds: null as string[] | null },
+  { id: "articulated", label: "Articulated & Mecha", catIds: ["action-figures", "toys"] },
+  { id: "desk", label: "Desk & Gaming", catIds: ["gaming", "keyboard", "workspace"] },
+  { id: "maker", label: "Maker & IoT", catIds: ["enclosures", "workshop"] },
+  { id: "everyday", label: "Everyday & Music", catIds: ["edc", "audio", "botanical"] },
+];
+
+function filterGroupFor(p: any): string {
+  const cat = p.categoryId;
+  if (["action-figures", "toys"].includes(cat)) return "articulated";
+  if (["gaming", "keyboard", "workspace"].includes(cat)) return "desk";
+  if (["enclosures", "workshop"].includes(cat)) return "maker";
+  if (["edc", "audio", "botanical"].includes(cat)) return "everyday";
+  return "desk";
+}
+
+function countFor(filter: { id: string; catIds: string[] | null }) {
+  if (filter.id === "all") return (products as any[]).length;
+  return (products as any[]).filter((p) => (filter.catIds || []).includes(p.categoryId)).length;
+}
+
+// Schema.org ItemList + Product JSON-LD for SEO
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "SNKB 3D Studio Product Catalog",
+  description: pageDescription,
+  itemListElement: (products as any[]).map((p, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    item: {
+      "@type": "Product",
+      name: p.name,
+      description: p.metaDescription,
+      category: p.category,
+      material: p.material,
+      width: `${p.dimensions.x} mm`,
+      height: `${p.dimensions.z} mm`,
+      depth: `${p.dimensions.y} mm`,
+      offers: {
+        "@type": "Offer",
+        price: p.price,
+        priceCurrency: p.currency,
+        availability: "https://schema.org/InStock",
+      },
+    },
+  })),
+};
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  {/* Continuous Animated SVG Filament Extrusion Track running down the page spine */}
+  <FilamentSpineTrack />
+
+  {/* Interactive 3D Hero Section ("The Live A1 Mini Print Stage") */}
+  <section id="hero" class="relative overflow-hidden py-16 lg:py-20 bg-gradient-to-b from-[#121315] via-[#101114] to-[#0c0d10]">
+    <div class="w-[96vw] max-w-[1680px] mx-auto px-3 sm:px-6 relative z-10">
+
+      {/* Asymmetric 12-Column Futuristic Grid */}
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+
+        {/* Left 6 Columns: High-Contrast Display Typography, Live Price Ticker & Magnetic HUD CTAs */}
+        <div class="lg:col-span-6 flex flex-col items-start text-left">
+
+          {/* Live Status Pill with Glowing Radar Pulse */}
+          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 cut-sm panel-ind text-xs text-zinc-300 mb-5 shadow-xl backdrop-blur-md border border-zinc-700/60">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FF66] opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00FF66]"></span>
+            </span>
+            <span class="font-medium telemetry text-[11px] text-[#00FF66]">A1 MINI PRINT LAB • ACTIVE</span>
+            <span class="text-zinc-600">|</span>
+            <span class="text-zinc-400 text-[10px] font-mono hidden sm:inline">Pan-India Fast Delivery • High-Grade PLA+</span>
+          </div>
+
+          {/* Main Typography — hero heading preserved verbatim */}
+          <h1 class="text-[clamp(1.9rem,5vw,3.6rem)] leading-[1.08] font-extrabold tracking-tight text-white">
+            Precision 3D Printing Engineered for <span class="text-[#FF6500]">Rapid Turnaround</span>
+          </h1>
+
+          <p class="mt-4 text-sm sm:text-base text-zinc-300 leading-relaxed font-normal">
+            Upload your <code class="text-[#00FF66] bg-black/70 px-2 py-0.5 border border-[#2b2e36] font-mono text-sm">.stl</code> for an <strong class="text-zinc-100 font-semibold">instant quoting tool</strong> — live 3D inspection, automated geometric verification, and transparent PLA+ material pricing in seconds (₹ INR).
+          </p>
+          <p class="mt-2 text-xs sm:text-sm text-zinc-400 leading-relaxed">
+            Engineered in India with high-precision FDM systems at 0.08–0.28&nbsp;mm layers and ±0.1&nbsp;mm precision. Fast Pan-India dispatch — from ESP32 enclosures to keyboard gear and modular planters — right to your doorstep.
+          </p>
+
+          {/* Live Quick Price Calculator Ticker */}
+          <div class="quick-ticker-badge mt-5 w-full p-3 cut-sm flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 text-xs font-mono">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2 h-2 bg-[#FF6500] rounded-xs animate-pulse shrink-0"></span>
+              <span class="text-white font-bold tracking-tight text-[11px] sm:text-xs">
+                ₹2.00/g • 180×180×180mm Max • Ships from MP across India
+              </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-[10px] text-zinc-400 shrink-0">
+              <span class="bg-black/60 px-3 py-1.5 rounded border border-zinc-800 text-[#00FF66] whitespace-nowrap">15g ≈ ₹149</span>
+              <span class="bg-black/60 px-3 py-1.5 rounded border border-zinc-800 text-sky-400 whitespace-nowrap">45g ≈ ₹209</span>
+              <span class="bg-black/60 px-3 py-1.5 rounded border border-zinc-800 text-orange-400 whitespace-nowrap">120g ≈ ₹359</span>
+            </div>
+          </div>
+
+          {/* Magnetic CTA Buttons with Tactile Hover States & Corner HUD Brackets */}
+          <div class="mt-6 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 w-full">
+            <a
+              href="#instant-quote"
+              class="hud-bracket-btn btn-mech btn-primary cut-sm px-6 py-3.5 text-xs sm:text-sm flex items-center justify-center gap-2 group shadow-lg shadow-orange-950/40 cursor-pointer w-full sm:w-auto"
+            >
+              <span class="font-mono text-xs opacity-70 group-hover:text-black">[</span>
+              <svg class="w-4 h-4 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              <span>Upload &amp; Get Instant STL Quote</span>
+              <span class="font-mono text-xs opacity-70 group-hover:text-black">]</span>
+            </a>
+
+            <a
+              href="#products"
+              class="hud-bracket-btn btn-mech cut-sm px-5 py-3.5 text-xs sm:text-sm text-zinc-200 flex items-center justify-center gap-1.5 group cursor-pointer w-full sm:w-auto"
+            >
+              <span class="font-mono text-xs text-zinc-500 group-hover:text-[#FF6500]">[</span>
+              <span>Explore Product Catalog — 6 Ready-to-Print Designs</span>
+              <span class="font-mono text-xs text-zinc-500 group-hover:text-[#FF6500]">]</span>
+            </a>
+
+            <a
+              href="#process"
+              class="hud-bracket-btn btn-mech cut-sm px-4 py-3.5 text-xs sm:text-sm text-zinc-400 hover:text-white flex items-center justify-center gap-1 group cursor-pointer w-full sm:w-auto"
+            >
+              <span>How It Works →</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Right 6 Columns: Interactive 3D Bambu Lab A1 Mini Build Volume Stage */}
+        <div class="lg:col-span-6 w-full">
+          <HeroPrintStage />
+        </div>
+      </div>
+
+      {/* Upgraded Bento HUD Metric Cards (Hardware Bento Grid) */}
+      <div class="mt-10 lg:mt-14">
+        <BentoMetricCards />
+      </div>
+
+    </div>
+  </section>
+
+  {/* HUD Section Seam 01 -> 02 */}
+  <HudSectionDivider
+    stageNumber="01"
+    stageName="THE MINI PRINT LAB"
+    nextStage="02: PRODUCTION PIPELINE"
+  />
+
+  {/* Interactive 4-Step Production Workflow Section */}
+  <section id="process" class="py-16 lg:py-20 bg-zinc-950/40 relative">
+    <div class="w-[96vw] max-w-[1680px] mx-auto px-3 sm:px-6">
+      <div class="text-center max-w-3xl mx-auto mb-10">
+        <span class="telemetry text-xs text-[#FF6500] bg-[#FF6500]/10 px-3 py-1 border border-[#FF6500]/40">
+          Seamless Workflow
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-3">
+          How It Works: Precision Production Pipeline
+        </h2>
+        <p class="text-zinc-400 text-sm sm:text-base mt-2">
+          From digital 3D model to production-grade physical parts delivered right to your doorstep across India in 4 simple steps.
+        </p>
+      </div>
+
+      {/* Interactive 4-Stage Production Pipeline with Animated Data Conduit */}
+      <InteractiveProductionPipeline />
+    </div>
+  </section>
+
+  {/* HUD Section Seam 02 -> 03 */}
+  <HudSectionDivider
+    stageNumber="02"
+    stageName="PRODUCTION PIPELINE"
+    nextStage="03: 3D SLICER ARENA"
+  />
+
+  {/* 3D Viewer & Instant Quoting Island Section — unified fluid 92vw bento cockpit */}
+  <section id="instant-quote" class="py-16 lg:py-20 bg-[#0e0f12]/90 relative">
+    <div class="w-[96vw] max-w-[1680px] mx-auto px-3 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto mb-8">
+        <span class="telemetry text-xs text-[#FF6500] bg-[#FF6500]/10 px-3 py-1 border border-[#FF6500]/40">
+          Interactive Client Island
+        </span>
+        <h2 class="text-3xl font-bold text-white tracking-tight mt-3">
+          Instant 3D STL Quoting &amp; Inspection
+        </h2>
+        <p class="text-zinc-400 text-sm mt-2">
+          Drop in any ASCII or Binary STL file. Rotate and examine the model in Three.js while our backend calculates exact volume, dimensions, and PLA+ material costs.
+        </p>
+      </div>
+    </div>
+
+    <div class="w-[96vw] max-w-[1680px] mx-auto px-3 sm:px-6">
+      {/* Astro client:only island — renders the triple-panel bento cockpit internally */}
+      <SlicerIsland client:only="react" />
+    </div>
+  </section>
+
+  {/* HUD Section Seam 03 -> 04 */}
+  <HudSectionDivider
+    stageNumber="03"
+    stageName="3D SLICER ARENA"
+    nextStage="04: MATERIAL ENGINEERING"
+  />
+
+  {/* Materials Guide Section */}
+  <section id="materials" class="py-16 lg:py-20 bg-zinc-900/30">
+    <div class="w-[96vw] max-w-[1680px] mx-auto px-3 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-900">
+          Material Engineering
+        </span>
+        <h2 class="text-3xl font-bold text-white tracking-tight mt-3">
+          Engineered Additive Materials
+        </h2>
+        <p class="text-zinc-400 text-sm mt-1">
+          High-grade filaments calibrated for structural durability, dimensional precision, and functional daily use.
+        </p>
+      </div>
+
+      {/* Gamified Material Stress-Test Simulator & Spool Lab */}
+      <MaterialStressLab />
+    </div>
+  </section>
+
+  {/* HUD Section Seam 04 -> 05 */}
+  <HudSectionDivider
+    stageNumber="04"
+    stageName="MATERIAL ENGINEERING"
+    nextStage="05: DESIGN CATALOG"
+  />
+
+  {/* Structured Product Catalog (rendered from src/data/products.json) */}
+  <section id="products" class="py-16 lg:py-20 bg-zinc-950">
+    <div class="w-[96vw] max-w-[1680px] mx-auto px-3 sm:px-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-900">
+            Design Catalog
+          </span>
+          <h2 class="text-3xl font-bold text-white tracking-tight mt-3">
+            Trending 3D Print Designs
+          </h2>
+          <p class="text-zinc-400 text-sm mt-1 max-w-xl">
+            A unified grid of functional, articulated and desk-ready designs engineered for maximum durability and precision in tough PLA+. Fast Pan-India courier delivery.
+          </p>
+        </div>
+        <div class="mt-4 md:mt-0">
+          <span class="text-xs text-zinc-500 font-mono">Custom orders accepted via STL upload</span>
+        </div>
+      </div>
+
+      {/* Interactive Category Filter Bar — one unified grid, zero orphan cards.
+          On phones this becomes a horizontally swipeable touch rail. */}
+      <div id="catalog-filter-bar" class="mb-6 sm:mb-8 flex overflow-x-auto no-scrollbar touch-rail items-center gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible sm:pb-0" role="group" aria-label="Filter catalog by category">
+        {catalogFilters.map((filter, i) => (
+          <button
+            type="button"
+            class={`catalog-filter-pill shrink-0 whitespace-nowrap cut-sm px-4 py-2 text-xs font-mono font-bold border transition cursor-pointer border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 bg-zinc-950/60 ${i === 0 ? 'is-active' : ''}`}
+            data-filter={filter.id}
+            aria-pressed={i === 0 ? 'true' : 'false'}
+          >
+            {filter.label} ({countFor(filter)})
+          </button>
+        ))}
+      </div>
+
+      {/* Unified 3-Column Responsive Catalog Grid */}
+      <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 lg:gap-6">
+        {products.map((p) => (
+          <article
+            class="catalog-card group cut-sm panel-ind border border-zinc-800 p-4 sm:p-5 flex flex-col justify-between hover:border-zinc-700 transition shadow-lg hover:shadow-indigo-500/10"
+            data-filter-group={filterGroupFor(p)}
+          >
+            <div>
+              <CatalogModelPreview product={p} />
+              <div class="flex items-center justify-between gap-3 mt-4 mb-4">
+                <span class="text-[11px] text-zinc-400 font-mono leading-relaxed">{p.dimensionsDisplay} • {p.material}</span>
+                <span class="text-lg font-extrabold text-emerald-400 shrink-0">₹{p.price}</span>
+              </div>
+
+              {p.multiPart && p.canExplode ? (
+                <div class="mb-4">
+                  <span class="telemetry text-[10px] text-[#00FF66] bg-[#00FF66]/10 px-2 py-0.5 border border-[#00FF66]/40 inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-[#00FF66] rounded-full animate-pulse"></span>
+                    MULTI-PART NO-AMS ({p.multiPart.assemblyType.toUpperCase()})
+                  </span>
+                </div>
+              ) : p.assemblyType === 'multi-part' ? (
+                <div class="mb-4">
+                  <span class="telemetry text-[10px] text-[#00FF66] bg-[#00FF66]/10 px-2 py-0.5 border border-[#00FF66]/40 inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-[#00FF66] rounded-full animate-pulse"></span>
+                    MULTI-PART SNAP-FIT • {p.partCount} PARTS • 0g PURGE
+                  </span>
+                </div>
+              ) : p.assemblyType === 'print-in-place' ? (
+                <div class="mb-4">
+                  <span class="telemetry text-[10px] text-amber-300 bg-amber-950/60 px-2 py-0.5 border border-amber-500/40 inline-flex items-center gap-1.5">
+                    🔒 PRINT-IN-PLACE MONOLITH — Hinges print pre-assembled; item cannot be exploded.
+                  </span>
+                </div>
+              ) : (
+                <div class="mb-4">
+                  <span class="telemetry text-[10px] text-zinc-300 bg-zinc-900/80 px-2 py-0.5 border border-zinc-700/60 inline-flex items-center gap-1.5">
+                    🔒 SINGLE-PIECE SOLID PRINT — Item cannot be exploded.
+                  </span>
+                </div>
+              )}
+
+              <h4 class="text-lg font-bold text-white mb-1">{p.name}</h4>
+              <p class="text-zinc-400 text-xs leading-relaxed mb-4 line-clamp-2">{p.metaDescription}</p>
+
+              <ul class="space-y-1.5 mb-6 text-xs text-zinc-300">
+                {p.features.map((feat: string) => (
+                  <li class="flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="line-clamp-2">{feat}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button
+              type="button"
+              class="quote-design-btn btn-mech cut-sm w-full py-3.5 px-4 text-zinc-200 text-xs font-semibold hover:text-[#FF6500] hover:border-[#FF6500] transition flex items-center justify-center gap-2 group/btn cursor-pointer"
+              data-stl={p.modelUrl || `/models/${p.id}.stl`}
+              data-base-stl={p.multiPart?.base || `/models/${p.id}-base.stl`}
+              data-accent-stl={p.multiPart?.accent || `/models/${p.id}-accent.stl`}
+              data-assembly-type={p.multiPart?.assemblyType || p.assemblyType || 'snap-fit'}
+              data-can-explode={p.canExplode ? 'true' : 'false'}
+              data-assembly-kind={p.assemblyType || 'single-piece'}
+              data-part-count={String(p.partCount ?? p.partsCount ?? 1)}
+              data-name={`${p.id}.stl`}
+              data-display-name={p.name}
+              data-color={p.defaultColors?.primary || '#FF6500'}
+              title={`Load ${p.name} 3D model into interactive viewer and calculate instant quote`}
+            >
+              <svg class="w-3.5 h-3.5 text-[#FF6500] group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+              </svg>
+              <span>Load in 3D Slicer → ({p.dimensionsDisplay})</span>
+            </button>
+          </article>
+        ))}
+      </div>
+      <p id="catalog-empty" class="hidden text-center text-zinc-500 text-sm py-10">
+        No designs in this category yet — upload your own STL below for an instant quote.
+      </p>
+    </div>
+  </section>
+
+  {/* HUD Section Seam 05 -> 06 */}
+  <HudSectionDivider
+    stageNumber="05"
+    stageName="DESIGN CATALOG"
+    nextStage="06: STUDIO CAPABILITIES"
+  />
+
+  {/* Specifications & Capabilities Section */}
+  <section id="specs" class="py-16 lg:py-20 bg-zinc-950">
+    <div class="w-[96vw] max-w-[1680px] mx-auto px-3 sm:px-6">
+      <div class="cut-sm panel-ind p-5 sm:p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl">
+        <div class="max-w-2xl">
+          <div class="telemetry text-xs text-[#FF6500] mb-2">Manufacturing Excellence</div>
+          <h3 class="text-xl sm:text-2xl font-bold text-white mb-3">Industrial Precision &amp; Multi-Printer Farm</h3>
+          <p class="text-zinc-400 text-sm leading-relaxed mb-4">
+            Our automated slicing and production pipeline delivers high-precision results for functional prototypes and production-grade parts. We support multi-scale prints, structural integrity validation, and fast courier dispatch across all Indian pin codes.
+          </p>
+          <div class="flex flex-wrap gap-4 text-xs font-mono text-zinc-300">
+            <span class="bg-zinc-800/80 px-3 py-1.5 rounded-lg border border-zinc-700">Layer Heights: 0.08 – 0.28 mm</span>
+            <span class="bg-zinc-800/80 px-3 py-1.5 rounded-lg border border-zinc-700">Tolerance: ±0.1 mm</span>
+            <span class="bg-zinc-800/80 px-3 py-1.5 rounded-lg border border-zinc-700">Shipping: Pan-India Express Delivery</span>
+          </div>
+        </div>
+
+        <div class="shrink-0">
+          <a
+            href="#instant-quote"
+            class="btn-mech btn-primary cut-sm px-6 py-3 text-sm block text-center"
+          >
+            Test Your STL Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function initQuoteDesignButtons() {
+      const quoteButtons = document.querySelectorAll<HTMLButtonElement>('.quote-design-btn');
+      quoteButtons.forEach((btn) => {
+        btn.onclick = (e) => {
+          e.preventDefault();
+          const stlUrl = btn.getAttribute('data-stl');
+          const baseStl = btn.getAttribute('data-base-stl');
+          const accentStl = btn.getAttribute('data-accent-stl');
+          const assemblyType = btn.getAttribute('data-assembly-type');
+          const canExplode = btn.getAttribute('data-can-explode') !== 'false';
+          const assemblyKind = btn.getAttribute('data-assembly-kind') || assemblyType || 'single-piece';
+          const partCount = parseInt(btn.getAttribute('data-part-count') || '1', 10) || 1;
+          const stlName = btn.getAttribute('data-name');
+          const displayName = btn.getAttribute('data-display-name');
+          const color = btn.getAttribute('data-color');
+          if (!stlUrl) return;
+
+          // Dispatch custom event to StlViewer with multi-part URLs + chosen color.
+          // Canonical snkb:load-model first, legacy snkb:load-design alias second.
+          // Honest explode: only genuine multi-part assemblies carry base/accent plates.
+          const detailIsMulti = canExplode && assemblyKind === 'multi-part';
+          const detail = {
+            url: stlUrl,
+            baseUrl: detailIsMulti ? baseStl : null,
+            accentUrl: detailIsMulti ? accentStl : null,
+            assemblyType: assemblyType || 'snap-fit',
+            canExplode,
+            assemblyKind,
+            partCount,
+            name: stlName || 'product-design.stl',
+            displayName: displayName || undefined,
+            color: color || undefined,
+          };
+          window.dispatchEvent(new CustomEvent('snkb:load-model', { detail }));
+          window.dispatchEvent(new CustomEvent('snkb:load-design', { detail }));
+
+          // Smooth scroll to 3D Viewer & Quote island
+          const viewerSection = document.getElementById('instant-quote');
+          if (viewerSection) {
+            viewerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        };
+      });
+    }
+
+    // Initialize on initial page load and Astro view transitions
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initQuoteDesignButtons);
+    } else {
+      initQuoteDesignButtons();
+    }
+    document.addEventListener('astro:page-load', initQuoteDesignButtons);
+
+    // Interactive category filter: one unified grid, no orphan cards.
+    function initCatalogFilter() {
+      const bar = document.getElementById('catalog-filter-bar');
+      const grid = document.getElementById('catalog-grid');
+      if (!bar || !grid) return;
+      const pills = bar.querySelectorAll<HTMLButtonElement>('.catalog-filter-pill');
+      const cards = grid.querySelectorAll<HTMLElement>('.catalog-card');
+      const empty = document.getElementById('catalog-empty');
+
+      pills.forEach((pill) => {
+        pill.onclick = () => {
+          const filter = pill.getAttribute('data-filter') || 'all';
+          pills.forEach((p) => {
+            p.classList.remove('is-active');
+            p.setAttribute('aria-pressed', 'false');
+          });
+          pill.classList.add('is-active');
+          pill.setAttribute('aria-pressed', 'true');
+
+          let visible = 0;
+          cards.forEach((card) => {
+            const grp = card.getAttribute('data-filter-group');
+            const show = filter === 'all' || grp === filter;
+            card.classList.toggle('hidden', !show);
+            if (show) visible += 1;
+          });
+          if (empty) empty.classList.toggle('hidden', visible > 0);
+        };
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initCatalogFilter);
+    } else {
+      initCatalogFilter();
+    }
+    document.addEventListener('astro:page-load', initCatalogFilter);
+  </script>
+
+  <style>
+    /* Highlighted state for the active catalog category pill */
+    .catalog-filter-pill.is-active {
+      border-color: #FF6500;
+      background: rgba(255, 101, 0, 0.15);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(255, 101, 0, 0.25);
+    }
+  </style>
+</Layout>

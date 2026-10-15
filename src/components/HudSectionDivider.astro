@@ -1,0 +1,78 @@
+---
+/**
+ * src/components/HudSectionDivider.astro
+ *
+ * Unified Bento HUD Section Connector Seam.
+ * Replaces plain horizontal lines with an animated SVG filament extrusion
+ * trackway connector featuring coordinate ticks, laser guides, and live stage telemetry.
+ */
+
+export interface Props {
+  stageNumber?: string;
+  stageName?: string;
+  nextStage?: string;
+  filamentColor?: string;
+}
+
+const {
+  stageNumber = '01',
+  stageName = 'STAGE CONNECTOR',
+  nextStage = 'NEXT PIPELINE PHASE',
+  filamentColor = '#FF6500',
+} = Astro.props;
+---
+
+<div class="hud-section-seam relative w-full overflow-hidden select-none bg-[#0e0f13] border-y border-[#2b2e36]/70 py-2.5 px-4 sm:px-8">
+  {/* Background micro grid */}
+  <div class="absolute inset-0 opacity-15 pointer-events-none cad-grid-bg"></div>
+
+  {/* Continuous Animated SVG Filament Line */}
+  <div class="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-[2px] pointer-events-none overflow-hidden">
+    <div class="w-full h-full bg-gradient-to-r from-transparent via-[#2b2e36] to-transparent"></div>
+    {/* Moving laser/extrusion pulse */}
+    <div class="hud-filament-pulse absolute inset-y-0 w-48 bg-gradient-to-r from-transparent via-[#FF6500] to-transparent"></div>
+  </div>
+
+  <div class="w-full max-w-[95vw] xl:max-w-[92vw] 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 relative z-10 text-[10px] font-mono text-zinc-500">
+    {/* Left: Origin Node */}
+    <div class="flex items-center gap-2">
+      <span class="w-1.5 h-1.5 rounded-full bg-[#FF6500] animate-ping"></span>
+      <span class="text-zinc-300 font-semibold tracking-wider">
+        [NODE {stageNumber}: {stageName}]
+      </span>
+      <span class="hidden md:inline text-zinc-600">• 1.75mm EXTRUSION TRACK</span>
+    </div>
+
+    {/* Center: Live Flow Telemetry */}
+    <div class="hidden sm:flex items-center gap-2 text-zinc-400 bg-zinc-950/80 px-3 py-0.5 rounded border border-zinc-800/80 shadow">
+      <span class="w-1.5 h-1.5 rounded-full bg-[#00FF66]"></span>
+      <span class="telemetry text-[9px] text-zinc-300">
+        FEED: <span class="text-[#00FF66]">CONTINUOUS</span> (28 mm³/s)
+      </span>
+      <span class="text-zinc-600">|</span>
+      <span class="telemetry text-[9px] text-zinc-400">NOZZLE: 215°C</span>
+    </div>
+
+    {/* Right: Target Node */}
+    <div class="flex items-center gap-2">
+      <span class="hidden sm:inline text-zinc-600">PROCEED TO →</span>
+      <span class="text-zinc-400 tracking-wider">[{nextStage}]</span>
+      <span class="text-[#FF6500] font-bold">+</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes filamentPulse {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(600%);
+    }
+  }
+
+  .hud-filament-pulse {
+    animation: filamentPulse 4.5s linear infinite;
+  }
+</style>

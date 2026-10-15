@@ -14,6 +14,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const crypto = require('node:crypto');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -22,6 +23,17 @@ const DEFAULT_UPLOAD_DIR = path.join(PROJECT_ROOT, 'uploads');
 const DEFAULT_STORAGE_BUCKET = 'stl-uploads';
 
 function resolveUploadDir() {
+  if (process.env.VERCEL) {
+    const tmpUploads = path.join(os.tmpdir(), 'uploads');
+    try {
+      if (!fs.existsSync(tmpUploads)) {
+        fs.mkdirSync(tmpUploads, { recursive: true });
+      }
+    } catch {
+      /* ignore */
+    }
+    return tmpUploads;
+  }
   const override = process.env.SNKB_UPLOAD_DIR;
   return override && override.trim() ? override.trim() : DEFAULT_UPLOAD_DIR;
 }

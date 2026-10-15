@@ -2,10 +2,7 @@
 
 /**
  * Vercel Serverless Function entry point for SNKB 3D Printing Express API.
- * Routes all /api/* requests to the Express application.
- *
- * The require is wrapped so that a boot-time failure surfaces as readable
- * JSON (api_boot_failed) instead of an opaque FUNCTION_INVOCATION_FAILED.
+ * Routes /api and /api/* requests to the Express application.
  */
 
 let app = null;
@@ -19,13 +16,26 @@ try {
   console.error('[api] boot failure:', (err && err.stack) || err);
 }
 
-if (bootError) {
-  const message = String((bootError && bootError.message) || bootError);
-  module.exports = (req, res) => {
+module.exports = (req, res) => {
+  if (bootError) {
+    const message = String((bootError && bootError.message) || bootError);
     res.statusCode = 500;
     res.setHeader('content-type', 'application/json');
-    res.end(JSON.stringify({ success: false, error: 'api_boot_failed', message }));
-  };
-} else {
-  module.exports = app;
-}
+    return res.end(JSON.stringify({ success: false, error: 'api_boot_failed', message }));
+  }
+
+  try {
+    return app(req, res);
+  } catch (err) {
+    console.error('[api] invocation error:', (err && err.stack) || err);
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.setHeader('content-type', 'application/json');
+      return res.end(JSON.stringify({
+        success: false,
+        error: 'api_invocation_error',
+        message: String((err && err.message) || err),
+      }));
+    }
+  }
+};

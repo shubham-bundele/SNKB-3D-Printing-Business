@@ -113,10 +113,12 @@ function serializeOrder(row) {
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 function getLocalStorePath() {
   if (process.env.SNKB_LOCAL_STORE_PATH) return process.env.SNKB_LOCAL_STORE_PATH;
   if (process.env.SNKB_DB_PATH) return `${process.env.SNKB_DB_PATH}.json`;
+  if (process.env.VERCEL) return path.join(os.tmpdir(), 'local_orders.json');
   return path.join(__dirname, '..', '..', 'data', 'local_orders.json');
 }
 
@@ -194,6 +196,7 @@ function serializeSpool(row) {
 }
 
 function getLocalSpoolsPath() {
+  if (process.env.VERCEL) return path.join(os.tmpdir(), 'local_spools.json');
   return path.join(__dirname, '..', '..', 'data', 'local_spools.json');
 }
 

@@ -37,10 +37,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /**
- * GET /api/health
+ * GET /api or /
+ * Lightweight discovery probe.
+ */
+app.get(['/api', '/api/'], (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'snkb-3d-printing-backend',
+    version: '1.0.0',
+    endpoints: [
+      '/api/health',
+      '/api/storage/config',
+      '/api/quote',
+      '/api/orders',
+      '/api/spools',
+    ],
+  });
+});
+
+/**
+ * GET /api/health (and alias /health)
  * Lightweight liveness probe used by the client and the API test suite.
  */
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'ok',
     service: 'snkb-3d-printing-backend',
@@ -49,10 +68,10 @@ app.get('/api/health', (req, res) => {
 });
 
 /**
- * GET /api/storage/config
+ * GET /api/storage/config (and alias /storage/config)
  * Public configuration endpoint for client direct uploads to Supabase Storage (bypassing Vercel's 4.5MB limit).
  */
-app.get('/api/storage/config', (req, res) => {
+app.get(['/api/storage/config', '/storage/config'], (req, res) => {
   const url = process.env.SUPABASE_URL || null;
   const anonKey = process.env.SUPABASE_ANON_KEY || null;
   const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'stl-uploads';

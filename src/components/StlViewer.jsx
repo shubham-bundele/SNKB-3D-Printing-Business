@@ -2863,11 +2863,17 @@ export default function StlViewer() {
         });
       }
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || `Server returned HTTP ${response.status}`);
+      }
 
       if (!response.ok) {
-        // Backend returned 400 (e.g., build volume exceeded or invalid STL)
-        setError(data.message || data.error || 'Server rejected model.');
+        // Backend returned error (e.g., build volume exceeded or invalid STL)
+        setError(data.message || data.error || `Server error (${response.status})`);
         setQuoteData(data); // preserve any parsed boundingBox details
       } else {
         setQuoteData(data);
@@ -2895,7 +2901,12 @@ export default function StlViewer() {
       }
     } catch (fetchErr) {
       console.error('API Quote error:', fetchErr);
-      setError('Could not reach the quoting service. Check your connection and try again (large files over 4MB need Supabase direct upload enabled).');
+      const msg = fetchErr?.message;
+      if (msg && !msg.includes('Unexpected token') && !msg.includes('JSON')) {
+        setError(msg);
+      } else {
+        setError('Could not reach the quoting service. Check your connection and try again (large files over 4MB need Supabase direct upload enabled).');
+      }
     } finally {
       setLoading(false);
     }

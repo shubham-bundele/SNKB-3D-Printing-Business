@@ -33,9 +33,9 @@ test('WebGL Context Pooling & Sizing Hotfix: catalogModelPreview.js enforcement'
   assert.ok(content.includes('renderer.dispose()') || content.includes('dispose()'), 'Must dispose renderer');
   assert.ok(content.includes('replaceChild') || content.includes('replacementCanvas'), 'Must replace/remove canvas on context loss');
 
-  // 4. Procedural fallback geometry on error
-  assert.ok(content.includes('createFallbackProceduralGeometry'), 'Must export createFallbackProceduralGeometry');
-  assert.ok(content.includes('TorusKnotGeometry'), 'Must use TorusKnotGeometry for procedural fallback mesh');
+  // 4. No procedural fallback geometry — errors surface honestly
+  assert.ok(!content.includes('createFallbackProceduralGeometry'), 'Must NOT keep fake procedural fallback geometry');
+  assert.ok(!content.includes('TorusKnotGeometry'), 'Must NOT use fake TorusKnotGeometry fallback meshes');
 
   // 5. Container ResizeObserver
   assert.ok(content.includes('ResizeObserver'), 'Must attach ResizeObserver to container');
@@ -62,8 +62,9 @@ test('WebGL Context Pooling & Sizing Hotfix: heroPrintStage.js & HeroPrintStage.
   assert.ok(jsContent.includes('webglcontextlost'), 'Must listen to webglcontextlost');
   assert.ok(jsContent.includes('webglcontextrestored'), 'Must listen to webglcontextrestored');
 
-  // Procedural fallback on load error
-  assert.ok(jsContent.includes('TorusKnotGeometry'), 'Must render procedural TorusKnotGeometry if STL load fails');
+  // No procedural fallback on load error — honest "unavailable" badge instead
+  assert.ok(!jsContent.includes('TorusKnotGeometry'), 'Must NOT render fake TorusKnotGeometry if STL load fails');
+  assert.ok(jsContent.includes('3D preview unavailable'), 'Must show an honest badge when preview cannot load');
 
   // ResizeObserver
   assert.ok(jsContent.includes('ResizeObserver'), 'Must attach ResizeObserver to parent container');
@@ -97,9 +98,8 @@ test('WebGL Context Pooling & Sizing Hotfix: StlViewer.jsx container dimensions,
   // WebGL context loss recovery
   assert.ok(content.includes('webglcontextlost'), 'Must handle webglcontextlost on main viewer');
 
-  // Procedural binary STL fallback on fetch error
-  assert.ok(content.includes('TorusKnotGeometry'), 'Must generate procedural fallback geometry if sample fetch fails');
-  assert.ok(content.includes('geometryToBinaryStl') || content.includes('Uint32Array') || content.includes('DataView'), 'Must format binary STL buffer on fallback');
+  // No procedural binary STL fallback on fetch error — honest failure only
+  assert.ok(!content.includes('TorusKnotGeometry'), 'Must NOT generate fake procedural geometry if sample fetch fails');
 });
 
 test('WebGL Context Pooling & Sizing Hotfix: dist/index.html includes updated container styles', () => {

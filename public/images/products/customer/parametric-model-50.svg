@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" width="400" height="260">
+  <defs>
+    <pattern id="gridUGFyYW1ldHJpYyBNb2RlbC01MC" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1f2937" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="260" fill="#0c0e12"/>
+  <rect width="400" height="260" fill="url(#gridUGFyYW1ldHJpYyBNb2RlbC01MC)"/>
+  <text x="200" y="86" text-anchor="middle" font-family="monospace" font-size="64">🧪</text>
+  <text x="200" y="126" text-anchor="middle" font-family="monospace" font-size="15" font-weight="bold" fill="#00FF66">PARAMETRIC MODEL-50 MAKER PLATE</text>
+  <text x="200" y="152" text-anchor="middle" font-family="monospace" font-size="12" fill="#9ca3af">100 × 32 × 24 mm · 95,206 triangles</text>
+  <text x="200" y="176" text-anchor="middle" font-family="monospace" font-size="11" fill="#6b7280">REAL 3MF MESH · SOLID 3D RENDER ONLINE</text>
+  <rect x="16" y="200" width="368" height="1" fill="#374151"/>
+  <text x="30" y="222" font-family="monospace" font-size="10" fill="#4b5563">parametric-model-50.3mf</text>
+</svg>

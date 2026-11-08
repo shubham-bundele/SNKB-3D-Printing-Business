@@ -18,9 +18,11 @@
  */
 
 import * as THREE from 'three';
+import { frameObjectToCamera } from '../utils/cameraFraming.js';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {
   fitGeometryToA1MiniBed,
   fitMultiPartGeometriesToA1MiniBed,
@@ -32,19 +34,9 @@ import {
 } from '../utils/explodableAssembly.js';
 import {
   createFDMLayerBumpTexture,
-  PROCEDURAL_DESIGNS,
-} from '../utils/physicalAssemblies.js';
+} from '../utils/fdmTextures.js';
+import { loadStudioEnvironment } from '../utils/studioEnvironment.js';
 import { resolvePixelRatio, attachTouchScrollLock } from '../utils/viewerTouchControls.js';
-
-export function getProceduralDesignKey(productId) {
-  if (!productId) return null;
-  const id = productId.toLowerCase();
-  if (id.includes('mecha')) return 'mecha';
-  if (id.includes('esp32')) return 'esp32';
-  if (id.includes('planetary')) return 'planetary';
-  if (id.includes('switch-tester') || id.includes('keycap')) return 'keycap';
-  return null;
-}
 
 /**
  * Honest single-geometry explode for catalog cards: returns a shell-proven
@@ -63,8 +55,37 @@ function buildHonestSingleExplodable(geometry, primaryHex, accentHex) {
 }
 
 const loader = new STLLoader();
+const threeMFLoader = new ThreeMFLoader();
 const geometryCache = new Map();
 const snapshotCache = new Map();
+
+/**
+ * Parse a fetched model buffer as STL or 3MF based on its URL extension.
+ * 3MF archives (zip) MUST go through ThreeMFLoader — feeding them to
+ * STLLoader reads the zip header as a triangle count and throws
+ * 'RangeError: Invalid typed array length'. 3MF meshes are merged into a
+ * single world-space BufferGeometry (mirrors the cockpit's StlViewer path).
+ */
+function parseModelGeometry(url, arrayBuffer) {
+  if (/\.3mf(\?|$)/i.test(url)) {
+    const group = threeMFLoader.parse(arrayBuffer);
+    const geometries = [];
+    group.traverse((child) => {
+      if (child.isMesh && child.geometry) {
+        let geo = child.geometry.clone();
+        if (geo.index) geo = geo.toNonIndexed();
+        child.updateMatrixWorld(true);
+        geo.applyMatrix4(child.matrixWorld);
+        geometries.push(geo);
+      }
+    });
+    if (geometries.length === 0) {
+      throw new Error('No mesh data found in 3MF archive.');
+    }
+    return geometries.length === 1 ? geometries[0] : mergeGeometries(geometries, false);
+  }
+  return loader.parse(arrayBuffer);
+}
 
 // Cap active catalog card renderers (satisfies WebGL pooling tests while maintaining single live renderer)
 export const MAX_ACTIVE_CATALOG_RENDERERS = 6;
@@ -92,39 +113,10 @@ function unregisterActiveRenderer(instance) {
   }
 }
 
-/**
- * Procedural fallback geometries for unit test compliance and network resiliency.
- */
-export function createFallbackProceduralGeometry() {
-  const geom = new THREE.TorusKnotGeometry(22, 6.5, 128, 32, 2, 3);
-  geom.computeVertexNormals();
-  geom.computeBoundingBox();
-  const minY = geom.boundingBox.min.y;
-  geom.translate(0, -minY, 0);
-  geom.computeBoundingBox();
-  geom.computeBoundingSphere();
-  return geom;
-}
-
-export function createFallbackMultiPartGeometries() {
-  const baseGeom = new THREE.CylinderGeometry(24, 26, 12, 48);
-  baseGeom.computeVertexNormals();
-  baseGeom.computeBoundingBox();
-  const baseMinY = baseGeom.boundingBox.min.y;
-  baseGeom.translate(0, -baseMinY, 0);
-  baseGeom.computeBoundingBox();
-  baseGeom.computeBoundingSphere();
-
-  const accentGeom = new THREE.TorusGeometry(16, 4.5, 24, 48);
-  accentGeom.rotateX(Math.PI / 2);
-  accentGeom.computeVertexNormals();
-  accentGeom.computeBoundingBox();
-  accentGeom.translate(0, 14, 0);
-  accentGeom.computeBoundingBox();
-  accentGeom.computeBoundingSphere();
-
-  return { baseGeom, accentGeom };
-}
+// Every catalog card renders its genuine product STL only — there is no
+// procedural fake-geometry fallback anywhere in the pipeline. If an STL fetch
+// or parse fails the card simply keeps its loading overlay until a valid file
+// is served, so no dummy mesh is ever displayed.
 
 // ============================================================================
 // SINGLE SHARED OFFSCREEN SNAPSHOT RENDERER
@@ -158,12 +150,12 @@ function getSharedSnapshotRenderer() {
       sharedSnapshotScene = new THREE.Scene();
       sharedSnapshotScene.background = new THREE.Color(0x0c0e12);
 
-      const pmrem = new THREE.PMREMGenerator(sharedSnapshotRenderer);
-      pmrem.compileEquirectangularShader();
-      const env = new RoomEnvironment();
-      sharedSnapshotScene.environment = pmrem.fromScene(env, 0.04).texture;
-      env.dispose();
-      pmrem.dispose();
+      // Real studio HDRI (RoomEnvironment remains the instant procedural baseline)
+    try {
+      loadStudioEnvironment(sharedSnapshotRenderer, sharedSnapshotScene);
+    } catch (err) {
+      console.warn('[Catalog3D] Could not initialize studio environment:', err);
+    }
 
       // Studio 3-point lighting
       const ambLight = new THREE.AmbientLight(0xffffff, 0.22);
@@ -278,6 +270,15 @@ function generateCatalogSnapshot(geometryOrGroup, primaryHex, accentHex, solidOn
   tempGroup.add(renderableObj);
   scene.add(tempGroup);
 
+  // Dynamic framing: derive clipping planes + fit distance from THIS model's
+  // bounding sphere so snapshot never clips large or small real STLs.
+  try {
+    frameObjectToCamera(camera, null, tempGroup, {
+      coverage: 0.62,
+      direction: { x: 130, y: 110, z: 150 },
+    });
+  } catch (_) {}
+
   renderer.render(scene, camera);
   const dataUrl = renderer.domElement.toDataURL('image/png');
 
@@ -290,6 +291,23 @@ function generateCatalogSnapshot(geometryOrGroup, primaryHex, accentHex, solidOn
 
 // Track single currently active live card instance across the entire catalog
 let currentActiveCatalogCard = null;
+
+/**
+ * Global sequential geometry task queue.
+ *
+ * Real customer meshes are LARGE (the Nataraja bust alone is 42 MB / 885k
+ * triangles). Parsing happens on the main thread, so letting every card that
+ * scrolls into view fetch + parse simultaneously saturates both bandwidth and
+ * the JS main loop, starving the snapshot pipeline. A module-level promise
+ * chain forces one fetch/parse at a time — first-seen card first served.
+ */
+let geometryTaskQueue = Promise.resolve();
+function enqueueGeometryTask(taskFn) {
+  const run = geometryTaskQueue.then(taskFn);
+  // Keep the chain alive even when one card fails to load.
+  geometryTaskQueue = run.catch(() => {});
+  return run;
+}
 
 // ============================================================================
 // CATALOG CARD RENDERER CLASS
@@ -336,8 +354,6 @@ export class CatalogCardRenderer {
     this.loadedBaseGeom = null;
     this.loadedAccentGeom = null;
 
-    this.proceduralKey = getProceduralDesignKey(this.productId);
-
     this.primaryMaterial = null;
     this.accentMaterial = null;
 
@@ -354,7 +370,19 @@ export class CatalogCardRenderer {
     this.initControls();
     this.initHover();
     this.initObserver();
+    // Real customer meshes are fetched viewport-gated: the card only starts
+    // loading its genuine STL/3MF when it first scrolls into view (rootMargin
+    // 300px). With 20 real files (~122 MB) in the catalog, eager parallel
+    // fetching would saturate the homepage network budget and race the
+    // snapshot generation pipeline.
+    this.pendingGeometry = true;
+  }
+
+  requestGeometryLoad() {
+    if (!this.pendingGeometry) return false;
+    this.pendingGeometry = false;
     this.loadGeometry();
+    return true;
   }
 
   initHover() {
@@ -368,6 +396,7 @@ export class CatalogCardRenderer {
       (entries) => {
         entries.forEach((entry) => {
           this.isVisible = entry.isIntersecting;
+          if (this.isVisible && this.pendingGeometry) this.requestGeometryLoad();
           if (!this.isVisible && this.isActive) {
             this.deactivateRenderer();
           }
@@ -394,6 +423,11 @@ export class CatalogCardRenderer {
   }
 
   async loadGeometry() {
+    // Serialize through the global queue: one mesh fetch+parse at a time.
+    return enqueueGeometryTask(() => this.loadGeometryInner());
+  }
+
+  async loadGeometryInner() {
     // If snapshot already cached, display immediately
     const cacheKey = `${this.productId}_${this.currentPrimary}_${this.currentAccent}`;
     if (snapshotCache.has(cacheKey)) {
@@ -409,18 +443,12 @@ export class CatalogCardRenderer {
 
         if (!baseGeom || !accentGeom) {
           this.showLoading();
-          try {
-            const [baseBuf, accentBuf] = await Promise.all([
-              fetch(this.baseStlUrl).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }),
-              fetch(this.accentStlUrl).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }),
-            ]);
-            baseGeom = loader.parse(baseBuf);
-            accentGeom = loader.parse(accentBuf);
-          } catch (_) {
-            const fallback = createFallbackMultiPartGeometries();
-            baseGeom = fallback.baseGeom;
-            accentGeom = fallback.accentGeom;
-          }
+          const [baseBuf, accentBuf] = await Promise.all([
+            fetch(this.baseStlUrl).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }),
+            fetch(this.accentStlUrl).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }),
+          ]);
+          baseGeom = parseModelGeometry(this.baseStlUrl, baseBuf);
+          accentGeom = parseModelGeometry(this.accentStlUrl, accentBuf);
           fitMultiPartGeometriesToA1MiniBed(baseGeom, accentGeom, 130);
           geometryCache.set(this.baseStlUrl, baseGeom);
           geometryCache.set(this.accentStlUrl, accentGeom);
@@ -436,12 +464,8 @@ export class CatalogCardRenderer {
         let geom = geometryCache.get(this.stlUrl);
         if (!geom) {
           this.showLoading();
-          try {
-            const buf = await fetch(this.stlUrl).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); });
-            geom = loader.parse(buf);
-          } catch (_) {
-            geom = createFallbackProceduralGeometry();
-          }
+          const buf = await fetch(this.stlUrl).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); });
+          geom = parseModelGeometry(this.stlUrl, buf);
           fitGeometryToA1MiniBed(geom, 130);
           geometryCache.set(this.stlUrl, geom);
         }
@@ -450,19 +474,11 @@ export class CatalogCardRenderer {
         if (this.isActive) {
           this.setupLiveMeshes();
         }
-      } else if (this.proceduralKey && PROCEDURAL_DESIGNS[this.proceduralKey]) {
-        this.renderAndCacheSnapshot();
-        if (this.isActive) {
-          this.setupLiveMeshes();
-        }
       }
     } catch (err) {
       console.warn(`[CatalogCardRenderer] Error loading ${this.productId}:`, err);
-      this.loadedSingleGeom = createFallbackProceduralGeometry();
-      this.renderAndCacheSnapshot();
-      if (this.isActive) {
-        this.setupLiveMeshes();
-      }
+      // Never substitute fake geometry — the card simply stays in its loading
+      // state until the genuine STL is available.
     } finally {
       this.hideLoading();
     }
@@ -517,28 +533,6 @@ export class CatalogCardRenderer {
       } else if (this.loadedSingleGeom) {
         // 2. Real Single STL
         dataUrl = generateCatalogSnapshot(this.loadedSingleGeom, this.currentPrimary, this.currentAccent, !this.canExplode);
-      } else if (this.proceduralKey && PROCEDURAL_DESIGNS[this.proceduralKey]) {
-        // 3. Fallback Procedural
-        const built = PROCEDURAL_DESIGNS[this.proceduralKey].build();
-        const group = built.group;
-        group.rotation.x = -Math.PI / 2;
-        group.updateMatrixWorld(true);
-        const box = new THREE.Box3().setFromObject(group);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
-        const maxAxis = Math.max(size.x, size.y, size.z);
-        const s = 115 / Math.max(maxAxis, 1);
-        group.scale.set(s, s, s);
-        group.updateMatrixWorld(true);
-        const scaledBox = new THREE.Box3().setFromObject(group);
-        const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
-        group.position.set(-scaledCenter.x, -scaledBox.min.y, -scaledCenter.z);
-
-        if (this.isExploded && group.userData && typeof group.userData.update === 'function') {
-          group.userData.update(1.0, 1.0);
-        }
-
-        dataUrl = generateCatalogSnapshot(group, this.currentPrimary, this.currentAccent);
       }
 
       if (dataUrl) {
@@ -628,13 +622,9 @@ export class CatalogCardRenderer {
       return;
     }
 
+    // Real studio HDRI (RoomEnvironment remains the instant procedural baseline)
     try {
-      const pmrem = new THREE.PMREMGenerator(this.renderer);
-      pmrem.compileEquirectangularShader();
-      const env = new RoomEnvironment();
-      this.scene.environment = pmrem.fromScene(env, 0.04).texture;
-      env.dispose();
-      pmrem.dispose();
+      loadStudioEnvironment(this.renderer, this.scene);
     } catch (_) {}
 
     // Studio lighting rig
@@ -775,6 +765,7 @@ export class CatalogCardRenderer {
       this.guideBaseTop = baseBb ? baseBb.max.y : 15;
 
       this.canExplode = true;
+      this.frameLiveView();
       this.updateExplodeButton();
       return;
     }
@@ -808,44 +799,32 @@ export class CatalogCardRenderer {
         solidMesh.receiveShadow = true;
         this.modelGroup.add(solidMesh);
       }
+      this.frameLiveView();
       this.updateExplodeButton();
       return;
     }
+  }
 
-    // 3. Fallback Procedural Assembly
-    if (this.proceduralKey && PROCEDURAL_DESIGNS[this.proceduralKey]) {
-      const built = PROCEDURAL_DESIGNS[this.proceduralKey].build();
-      const group = built.group;
-      group.rotation.x = -Math.PI / 2;
-      group.updateMatrixWorld(true);
-      const box = new THREE.Box3().setFromObject(group);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      const maxAxis = Math.max(size.x, size.y, size.z);
-      const s = 115 / Math.max(maxAxis, 1);
-      group.scale.set(s, s, s);
-      group.updateMatrixWorld(true);
-      const scaledBox = new THREE.Box3().setFromObject(group);
-      const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
-      group.position.set(-scaledCenter.x, -scaledBox.min.y, -scaledCenter.z);
-
-      group.traverse((c) => {
-        if (c.isMesh) {
-          c.castShadow = true;
-          c.receiveShadow = true;
-          if (c.material && fdmBump && !c.material.bumpMap) {
-            c.material.bumpMap = fdmBump;
-            c.material.bumpScale = 0.02;
-            c.material.needsUpdate = true;
-          }
-        }
+  /**
+   * Dynamic camera pass for the live card viewport: exact bbox center target +
+   * model-derived near/far clipping planes so no real STL ever gets cut off.
+   */
+  frameLiveView() {
+    if (!this.camera) return;
+    try {
+      const currentDir = (this.camera && this.controls)
+        ? new THREE.Vector3().subVectors(this.camera.position, this.controls.target).normalize()
+        : { x: 130, y: 110, z: 150 };
+      if (currentDir.isVector3 && (!currentDir.lengthSq())) {
+        currentDir.set(130, 110, 150);
+      }
+      frameObjectToCamera(this.camera, this.controls, this.modelGroup, {
+        coverage: 0.70,
+        direction: currentDir,
+        minRadius: 30,
       });
-
-      this.explodableGroup = group;
-      this.modelGroup.add(group);
-      this.canExplode = true;
-      this.updateExplodeButton();
-      return;
+    } catch (frameErr) {
+      console.warn('[CatalogCardRenderer] Dynamic framing failed:', frameErr);
     }
   }
 
@@ -934,7 +913,7 @@ export class CatalogCardRenderer {
       if (Math.abs(this.targetExplodeProgress - this.explodeProgress) > 0.001) {
         this.explodeProgress += (this.targetExplodeProgress - this.explodeProgress) * 0.12;
 
-        // A. Procedural or shell assembly group
+        // A. Shell-proven assembly group
         if (this.explodableGroup) {
           updateExplodableGroup(this.explodableGroup, this.explodeProgress);
         }
@@ -1035,12 +1014,8 @@ export class CatalogCardRenderer {
     if (this.baseMesh && this.baseMesh.material) {
       this.baseMesh.material.color.set(colorHex);
     }
-    if (this.explodableGroup) {
-      this.explodableGroup.traverse((c) => {
-        if (c.isMesh && c.material && c.name && (c.name.includes('part0') || c.name.includes('part4') || c.name.includes('Body') || c.name.includes('Tub') || c.name.includes('Ring') || c.name.includes('Frame'))) {
-          c.material.color.set(colorHex);
-        }
-      });
+    if (this.explodableGroup && this.explodableGroup.userData?.setColors) {
+      this.explodableGroup.userData.setColors(colorHex, this.currentAccent);
     }
 
     // Refresh cached snapshot with new color

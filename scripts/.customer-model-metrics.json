@@ -1,0 +1,342 @@
+[
+  {
+    "file": "a1-dust-cover-ptfe.stl",
+    "kind": "binary-stl",
+    "sizeMB": 0.9,
+    "triangles": 18768,
+    "dimsMm": [
+      17,
+      8,
+      17
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 916,
+    "surfaceAreaMm2": 1542,
+    "volumeCm3": 0.92,
+    "notes": [],
+    "parseMs": 10
+  },
+  {
+    "file": "ac-remote-wall-mount.3mf",
+    "kind": "3mf-model-xml",
+    "sizeMB": 0.5,
+    "triangles": 2140,
+    "dimsMm": [
+      30,
+      55,
+      75
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 18952,
+    "surfaceAreaMm2": 25132,
+    "volumeCm3": 18.95,
+    "notes": [],
+    "parseMs": 13
+  },
+  {
+    "file": "ams-ptfe-plug.stl",
+    "kind": "binary-stl",
+    "sizeMB": 0.2,
+    "triangles": 5188,
+    "dimsMm": [
+      16.5,
+      16.5,
+      7.5
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 717,
+    "surfaceAreaMm2": 1289,
+    "volumeCm3": 0.72,
+    "notes": [],
+    "parseMs": 1
+  },
+  {
+    "file": "assembly-a.stl",
+    "kind": "binary-stl",
+    "sizeMB": 3.3,
+    "triangles": 69060,
+    "dimsMm": [
+      43.45,
+      44,
+      118.74
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 18936,
+    "surfaceAreaMm2": 9470,
+    "volumeCm3": 18.94,
+    "notes": [],
+    "parseMs": 11
+  },
+  {
+    "file": "bag-clip-6mm.3mf",
+    "kind": "3mf-model-xml",
+    "sizeMB": 2.2,
+    "triangles": 166150,
+    "dimsMm": [
+      35,
+      14.8,
+      10
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 2986,
+    "surfaceAreaMm2": 3065,
+    "volumeCm3": 2.99,
+    "notes": [],
+    "parseMs": 382
+  },
+  {
+    "file": "body-shell-1.stl",
+    "kind": "binary-stl",
+    "sizeMB": 0.1,
+    "triangles": 2636,
+    "dimsMm": [
+      55.98,
+      15.5,
+      5
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 1514,
+    "surfaceAreaMm2": 1895,
+    "volumeCm3": 1.51,
+    "notes": [],
+    "parseMs": 1
+  },
+  {
+    "file": "dust-cover-filla.stl",
+    "kind": "binary-stl",
+    "sizeMB": 2.5,
+    "triangles": 51624,
+    "dimsMm": [
+      14.04,
+      14.02,
+      6
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 268,
+    "surfaceAreaMm2": 595,
+    "volumeCm3": 0.27,
+    "notes": [],
+    "parseMs": 7
+  },
+  {
+    "file": "hex-bolt.stl",
+    "kind": "binary-stl",
+    "sizeMB": 4.9,
+    "triangles": 103224,
+    "dimsMm": [
+      60.62,
+      70,
+      170
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 193752,
+    "surfaceAreaMm2": 40890,
+    "volumeCm3": 193.75,
+    "notes": [],
+    "parseMs": 19
+  },
+  {
+    "file": "hex-nut.stl",
+    "kind": "binary-stl",
+    "sizeMB": 0.2,
+    "triangles": 4298,
+    "dimsMm": [
+      60.62,
+      70,
+      21.6
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 43256,
+    "surfaceAreaMm2": 11126,
+    "volumeCm3": 43.26,
+    "notes": [],
+    "parseMs": 1
+  },
+  {
+    "file": "jellyfish-body.stl",
+    "kind": "binary-stl",
+    "sizeMB": 8.2,
+    "triangles": 171636,
+    "dimsMm": [
+      69.42,
+      69.42,
+      14.14
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 9679,
+    "surfaceAreaMm2": 10068,
+    "volumeCm3": 9.68,
+    "notes": [],
+    "parseMs": 23
+  },
+  {
+    "file": "jellyfish-top.stl",
+    "kind": "binary-stl",
+    "sizeMB": 1.7,
+    "triangles": 35632,
+    "dimsMm": [
+      41.06,
+      40.29,
+      25.86
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 18140,
+    "surfaceAreaMm2": 4892,
+    "volumeCm3": 18.14,
+    "notes": [],
+    "parseMs": 4
+  },
+  {
+    "file": "nataraja-brass-square.stl",
+    "kind": "binary-stl",
+    "sizeMB": 42.2,
+    "triangles": 885142,
+    "dimsMm": [
+      128.86,
+      59.5,
+      155.56
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 57810,
+    "surfaceAreaMm2": 31699,
+    "volumeCm3": 57.81,
+    "notes": [],
+    "parseMs": 114
+  },
+  {
+    "file": "nataraja-statue.stl",
+    "kind": "binary-stl",
+    "sizeMB": 25.5,
+    "triangles": 535640,
+    "dimsMm": [
+      57.46,
+      20.1,
+      82.87
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 12649,
+    "surfaceAreaMm2": 9577,
+    "volumeCm3": 12.65,
+    "notes": [],
+    "parseMs": 83
+  },
+  {
+    "file": "parametric-model-50.3mf",
+    "kind": "3mf-model-xml",
+    "sizeMB": 2.2,
+    "triangles": 95206,
+    "dimsMm": [
+      99.57,
+      31.64,
+      24.23
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 12989,
+    "surfaceAreaMm2": 16423,
+    "volumeCm3": 12.99,
+    "notes": [],
+    "parseMs": 219
+  },
+  {
+    "file": "portafilter-holder.3mf",
+    "kind": "3mf-model-xml",
+    "sizeMB": 1.4,
+    "triangles": 8362,
+    "dimsMm": [
+      69,
+      44,
+      3.5
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 1662,
+    "surfaceAreaMm2": 505659,
+    "volumeCm3": 1.66,
+    "notes": [],
+    "parseMs": 18
+  },
+  {
+    "file": "ps4-fat-foot-logo-stand.3mf",
+    "kind": "3mf-model-xml",
+    "sizeMB": 0.6,
+    "triangles": 13696,
+    "dimsMm": [
+      28.64,
+      48,
+      20
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 30814,
+    "surfaceAreaMm2": 22746,
+    "volumeCm3": 30.81,
+    "notes": [],
+    "parseMs": 33
+  },
+  {
+    "file": "ps5-dual-joystick-stand.3mf",
+    "kind": "3mf-model-xml",
+    "sizeMB": 1.3,
+    "triangles": 20114,
+    "dimsMm": [
+      117.02,
+      109.53,
+      36.67
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 493398,
+    "surfaceAreaMm2": 10117948,
+    "volumeCm3": 493.4,
+    "notes": [],
+    "parseMs": 40
+  },
+  {
+    "file": "sacred-flame-om.stl",
+    "kind": "binary-stl",
+    "sizeMB": 24.7,
+    "triangles": 518426,
+    "dimsMm": [
+      104.96,
+      36.12,
+      160
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 64994,
+    "surfaceAreaMm2": 23897,
+    "volumeCm3": 64.99,
+    "notes": [],
+    "parseMs": 73
+  },
+  {
+    "file": "sweeping-name-plate-2line.3mf",
+    "kind": "3mf-model-xml",
+    "sizeMB": 2.8,
+    "triangles": 99208,
+    "dimsMm": [
+      118.57,
+      44.02,
+      37.2
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 59716,
+    "surfaceAreaMm2": 48056,
+    "volumeCm3": 59.72,
+    "notes": [],
+    "parseMs": 207
+  },
+  {
+    "file": "usb-a-male-plug.stl",
+    "kind": "binary-stl",
+    "sizeMB": 0.6,
+    "triangles": 12316,
+    "dimsMm": [
+      15.47,
+      8,
+      11.18
+    ],
+    "nativeMaxDimRaw": null,
+    "volumeMm3": 444,
+    "surfaceAreaMm2": 537,
+    "volumeCm3": 0.44,
+    "notes": [],
+    "parseMs": 1
+  }
+]

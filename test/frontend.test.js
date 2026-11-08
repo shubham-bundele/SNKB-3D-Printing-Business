@@ -24,29 +24,39 @@ test('Frontend Storefront - static build verification', () => {
     'Hero section title should be present'
   );
 
-  // Verify Unified Catalog Filter Bar (replaces the old stacked category headings)
+  // Verify Unified Catalog Filter Bar (rebuilt in Phase 30 around the REAL
+  // customer design archive in public/models/customer/)
   assert.ok(
-    html.includes('Articulated &amp; Mecha') || html.includes('Articulated & Mecha'),
-    'Articulated & Mecha catalog filter should be present'
+    html.includes('Utility &amp; Everyday') || html.includes('Utility & Everyday'),
+    'Utility & Everyday catalog filter should be present'
   );
   assert.ok(
-    html.includes('Maker &amp; IoT') || html.includes('Maker & IoT'),
-    'Maker & IoT catalog filter should be present'
+    html.includes('Maker &amp; Machine Hardware') || html.includes('Maker & Machine Hardware'),
+    'Maker & Machine Hardware catalog filter should be present'
   );
   assert.ok(
-    html.includes('Everyday &amp; Music') || html.includes('Everyday & Music'),
-    'Everyday & Music catalog filter should be present'
+    html.includes('Gaming Gear Stands'),
+    'Gaming Gear Stands catalog filter should be present'
   );
 
-  // Verify CAD product renders (no placeholder boxes)
+  // Verify the catalog is now built from the real customer archive
   assert.ok(
-    html.includes('/images/products/'),
-    'Catalog cards should render product illustration images'
+    html.includes('/models/customer/'),
+    'Catalog designs must reference the real customer STL/3MF archive'
+  );
+  assert.ok(html.includes('/models/customer/bag-clip-6mm.3mf'), 'Bag clip design should be referenced');
+  assert.ok(html.includes('/models/customer/nataraja-brass-square.stl'), 'Nataraja design should be referenced');
+  assert.ok(html.includes('/models/customer/sweeping-name-plate-2line.3mf'), 'Nameplate design should be referenced');
+
+  // Verify product posters (CAD-style placeholders until the live WebGL
+  // snapshot finishes rendering — no fake product illustrations)
+  assert.ok(
+    html.includes('/images/products/customer/'),
+    'Catalog cards should reference the customer poster SVGs'
   );
   assert.ok(
-    (html.includes('esp32-wled-controller-case.jpg') || html.includes('esp32-wled-controller-case.svg')) &&
-      (html.includes('modular-planter-trio-tray.jpg') || html.includes('modular-planter-trio-tray.svg')),
-    'All six product renders should be referenced'
+    html.includes('bag-clip-6mm.svg') && html.includes('sweeping-name-plate-2line.svg'),
+    'Poster SVGs for real designs should be referenced'
   );
 
   // Verify Indian localization and material standards

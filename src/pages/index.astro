@@ -16,23 +16,26 @@ const pageTitle = "SNKB 3D Studio — Custom 3D Printing & Instant STL Quoting |
 const pageDescription = "Upload your .stl for an instant 3D printing quote. High-precision 3D printing in tough PLA+ with fast Pan-India express delivery (±0.1 mm precision, 0.08–0.28 mm layers). ESP32 enclosures, keyboard gear & modular designs.";
 
 // Unified catalog: a single filterable 3-column grid (zero orphan cards).
+// Every product is a REAL customer design file served from /models/customer/.
 // Each product maps to one filter group via its categoryId so the pills stay
 // mutually exclusive and every default ("All Models") row is perfectly full.
 const catalogFilters = [
   { id: "all", label: "All Models", catIds: null as string[] | null },
-  { id: "articulated", label: "Articulated & Mecha", catIds: ["action-figures", "toys"] },
-  { id: "desk", label: "Desk & Gaming", catIds: ["gaming", "keyboard", "workspace"] },
-  { id: "maker", label: "Maker & IoT", catIds: ["enclosures", "workshop"] },
-  { id: "everyday", label: "Everyday & Music", catIds: ["edc", "audio", "botanical"] },
+  { id: "utility", label: "Utility & Everyday", catIds: ["utility"] },
+  { id: "gaming", label: "Gaming Gear Stands", catIds: ["gaming"] },
+  { id: "maker", label: "Maker & Machine Hardware", catIds: ["hardware"] },
+  { id: "art", label: "Décor, Art & Spiritual", catIds: ["art"] },
+  { id: "signage", label: "Custom Signage", catIds: ["signage"] },
 ];
 
 function filterGroupFor(p: any): string {
   const cat = p.categoryId;
-  if (["action-figures", "toys"].includes(cat)) return "articulated";
-  if (["gaming", "keyboard", "workspace"].includes(cat)) return "desk";
-  if (["enclosures", "workshop"].includes(cat)) return "maker";
-  if (["edc", "audio", "botanical"].includes(cat)) return "everyday";
-  return "desk";
+  if (cat === "utility") return "utility";
+  if (cat === "gaming") return "gaming";
+  if (cat === "hardware") return "maker";
+  if (cat === "art") return "art";
+  if (cat === "signage") return "signage";
+  return "utility";
 }
 
 function countFor(filter: { id: string; catIds: string[] | null }) {
@@ -355,13 +358,13 @@ const jsonLd = {
               type="button"
               class="quote-design-btn btn-mech cut-sm w-full py-3.5 px-4 text-zinc-200 text-xs font-semibold hover:text-[#FF6500] hover:border-[#FF6500] transition flex items-center justify-center gap-2 group/btn cursor-pointer"
               data-stl={p.modelUrl || `/models/${p.id}.stl`}
-              data-base-stl={p.multiPart?.base || `/models/${p.id}-base.stl`}
-              data-accent-stl={p.multiPart?.accent || `/models/${p.id}-accent.stl`}
-              data-assembly-type={p.multiPart?.assemblyType || p.assemblyType || 'snap-fit'}
+              data-base-stl={p.multiPart?.base || ''}
+              data-accent-stl={p.multiPart?.accent || ''}
+              data-assembly-type={p.multiPart?.assemblyType || p.assemblyType || 'single-piece'}
               data-can-explode={p.canExplode ? 'true' : 'false'}
               data-assembly-kind={p.assemblyType || 'single-piece'}
               data-part-count={String(p.partCount ?? p.partsCount ?? 1)}
-              data-name={`${p.id}.stl`}
+              data-name={String(p.modelUrl || `/models/${p.id}.stl`).split('/').pop()}
               data-display-name={p.name}
               data-color={p.defaultColors?.primary || '#FF6500'}
               title={`Load ${p.name} 3D model into interactive viewer and calculate instant quote`}

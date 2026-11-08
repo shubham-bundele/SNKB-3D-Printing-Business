@@ -419,8 +419,12 @@ export function calculateQuote({
   });
 
   const supportWeightUnit = supportsEnabled ? support.supportWeightGrams : 0;
-  // A1 Mini bedslinger auto-brim (+1.5g) for tall/narrow parts
-  const brimCheck = detectAutoBrim({ size: dimensions });
+  // A1 Mini bedslinger auto-brim (+1.5g) for tall/narrow parts.
+  // NOTE: unified dimensions are {x: width, y: depth, z: vertical height} —
+  // z is ALWAYS the build height in both client and backend quote paths.
+  const brimCheck = detectAutoBrim({
+    size: { heightMm: dimensions.z, widthMm: dimensions.x, depthMm: dimensions.y },
+  });
   const brimApplies = Boolean(autoBrim || brimCheck.needsBrim);
   const brimWeightUnit = brimApplies ? BRIM_WEIGHT_G : 0;
   const unitWeightGrams = roundNum(partWeightUnit + supportWeightUnit + brimWeightUnit, 3);

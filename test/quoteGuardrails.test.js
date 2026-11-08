@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const engine = require('../src/utils/pricingEngine.js');
 const service = require('../src/services/quoteCalculator.js');
 const { getPartNamesForDesign } = require('../src/utils/explodableAssembly.js');
-const physical = require('../src/utils/physicalAssemblies.js');
+const fdmTextures = require('../src/utils/fdmTextures.js');
 
 const SAMPLE = {
   volumeMm3: 15000,
@@ -84,6 +84,31 @@ test('exceedsBuildVolume flags any axis above 180mm', () => {
   assert.equal(engine.exceedsBuildVolume(null), false);
 });
 
+test('Auto-brim reads z as vertical height — flat parts never falsely brim', () => {
+  // Long flat plate: 30mm tall on a 152×81mm footprint (z = height axis).
+  // The old bug read y (depth) as height and flagged it tall-aspect.
+  const flat = engine.calculateQuote({
+    ...SAMPLE,
+    volumeMm3: 100000,
+    surfaceAreaMm2: 50000,
+    dimensions: { x: 152, y: 81, z: 30 },
+    hasActiveModel: true,
+  });
+  assert.equal(flat.autoBrim, false, 'flat plate must not trigger auto-brim');
+  assert.equal(flat.brimWeightGrams, 0);
+
+  // A genuinely tall nub: 140mm skyscraper on a 40×40mm base (ratio 3.5).
+  const tall = engine.calculateQuote({
+    ...SAMPLE,
+    volumeMm3: 20000,
+    surfaceAreaMm2: 48000,
+    dimensions: { x: 40, y: 40, z: 140 },
+    hasActiveModel: true,
+  });
+  assert.equal(tall.autoBrim, true, 'tall-aspect part must trigger auto-brim');
+  assert.equal(tall.brimWeightGrams, engine.BRIM_WEIGHT_G);
+});
+
 test('Physical part names resolve per design with honest fallback', () => {
   const esp32 = getPartNamesForDesign('esp32-wled-controller-case.stl');
   assert.equal(esp32.base, 'Base Tub + PCB Standoffs');
@@ -96,38 +121,10 @@ test('Physical part names resolve per design with honest fallback', () => {
   assert.equal(unknown.accent, 'Accent Plate Assembly');
 });
 
-test('Procedural assemblies build named parts that fit the 180mm bed', () => {
-  const cases = [
-    ['mecha', physical.buildMechaAssembly, 5],
-    ['esp32', physical.buildEnclosureAssembly, 3],
-    ['planetary', physical.buildPlanetaryAssembly, 6],
-    ['keycap', physical.buildKeycapTesterAssembly, 3],
-  ];
-  for (const [key, build, partCount] of cases) {
-    const r = build();
-    assert.equal(r.parts.length, partCount, `${key} part count`);
-    assert.ok(r.dims.x <= 180 && r.dims.y <= 180 && r.dims.z <= 180, `${key} fits bed: ${JSON.stringify(r.dims)}`);
-    assert.ok(r.volumeMm3 > 1000, `${key} has real volume`);
-    assert.ok(r.group.userData.isProceduralAssembly, `${key} controller flag`);
-    assert.deepEqual(r.group.userData.partNames, r.parts);
-  }
-});
-
-test('Procedural explode controller separates parts with guides', () => {
-  const r = physical.buildEnclosureAssembly();
-  const u = r.group.userData;
-  u.update(1, 1.0);
-  const moved = u.childMeshes.filter((c) => c.position.length() > 0.01).length;
-  assert.equal(moved, 2, 'tub stays, PCB + lid lift');
-  assert.equal(u.dashedLineSegments.visible, true);
-  u.update(0, 1.0);
-  assert.ok(u.childMeshes.every((c) => c.position.length() < 0.01), 'parts reassemble');
-});
-
 test('FDM bump texture degrades gracefully without DOM', () => {
   // Node has no document: helper must return null, materials stay valid.
-  assert.equal(physical.createFDMLayerBumpTexture(), null);
-  const mat = physical.physicalFilamentMaterial('#FF6500');
+  assert.equal(fdmTextures.createFDMLayerBumpTexture(), null);
+  const mat = fdmTextures.physicalFilamentMaterial('#FF6500');
   assert.equal(mat.bumpMap, null);
   assert.equal(mat.roughness, 0.28);
 });

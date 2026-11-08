@@ -43,49 +43,52 @@ function parse3mf(buffer) {
     throw new Error('Invalid 3MF: file is not a valid zip archive.');
   }
 
-  let modelEntry = null;
-  for (const key of Object.keys(unzipped)) {
-    if (key.toLowerCase().endsWith('3dmodel.model')) {
-      modelEntry = unzipped[key];
-      break;
-    }
-  }
-
-  if (!modelEntry) {
-    throw new Error('Invalid 3MF: missing 3D/3dmodel.model inside archive.');
-  }
-
-  const xmlText = strFromU8(modelEntry);
-  const meshRegex = /<mesh\b[^>]*>([\s\S]*?)<\/mesh>/gi;
+  // Mesh data can live in 3D/3dmodel.model OR in referenced slices under
+  // 3D/Objects/*.model (Bambu Studio packages store geometry there and keep
+  // 3dmodel.model as a build/object manifest). Parse EVERY *.model entry and
+  // union the triangle soup — each entry (and each <mesh> within it) carries
+  // its own local vertex table, so indices are resolved per-slice.
+  let sawAnyModelEntry = false;
   const allTriangles = [];
-  let meshMatch;
+  for (const key of Object.keys(unzipped)) {
+    if (!key.toLowerCase().endsWith('.model')) continue;
+    sawAnyModelEntry = true;
 
-  while ((meshMatch = meshRegex.exec(xmlText)) !== null) {
-    const meshContent = meshMatch[1];
-    const vertexList = [];
-    const vertexRegex = /<vertex\b([^>]*)\/?>/gi;
-    let vMatch;
-    while ((vMatch = vertexRegex.exec(meshContent)) !== null) {
-      const attrs = parseXmlAttributes(vMatch[1]);
-      const x = parseFloat(attrs.x || '0');
-      const y = parseFloat(attrs.y || '0');
-      const z = parseFloat(attrs.z || '0');
-      vertexList.push([x, y, z]);
-    }
+    const xmlText = strFromU8(unzipped[key]);
+    const meshRegex = /<mesh\b[^>]*>([\s\S]*?)<\/mesh>/gi;
+    let meshMatch;
 
-    const triangleRegex = /<triangle\b([^>]*)\/?>/gi;
-    let tMatch;
-    while ((tMatch = triangleRegex.exec(meshContent)) !== null) {
-      const attrs = parseXmlAttributes(tMatch[1]);
-      const v1 = parseInt(attrs.v1, 10);
-      const v2 = parseInt(attrs.v2, 10);
-      const v3 = parseInt(attrs.v3, 10);
-      if (!Number.isNaN(v1) && !Number.isNaN(v2) && !Number.isNaN(v3)) {
-        if (vertexList[v1] && vertexList[v2] && vertexList[v3]) {
-          allTriangles.push(vertexList[v1], vertexList[v2], vertexList[v3]);
+    while ((meshMatch = meshRegex.exec(xmlText)) !== null) {
+      const meshContent = meshMatch[1];
+      const vertexList = [];
+      const vertexRegex = /<vertex\b([^>]*)\/?>/gi;
+      let vMatch;
+      while ((vMatch = vertexRegex.exec(meshContent)) !== null) {
+        const attrs = parseXmlAttributes(vMatch[1]);
+        const x = parseFloat(attrs.x || '0');
+        const y = parseFloat(attrs.y || '0');
+        const z = parseFloat(attrs.z || '0');
+        vertexList.push([x, y, z]);
+      }
+
+      const triangleRegex = /<triangle\b([^>]*)\/?>/gi;
+      let tMatch;
+      while ((tMatch = triangleRegex.exec(meshContent)) !== null) {
+        const attrs = parseXmlAttributes(tMatch[1]);
+        const v1 = parseInt(attrs.v1, 10);
+        const v2 = parseInt(attrs.v2, 10);
+        const v3 = parseInt(attrs.v3, 10);
+        if (!Number.isNaN(v1) && !Number.isNaN(v2) && !Number.isNaN(v3)) {
+          if (vertexList[v1] && vertexList[v2] && vertexList[v3]) {
+            allTriangles.push(vertexList[v1], vertexList[v2], vertexList[v3]);
+          }
         }
       }
     }
+  }
+
+  if (!sawAnyModelEntry) {
+    throw new Error('Invalid 3MF: missing 3D/*.model mesh XML inside archive.');
   }
 
   if (allTriangles.length === 0) {

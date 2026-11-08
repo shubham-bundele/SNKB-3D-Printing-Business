@@ -37,3 +37,6 @@ Thumbs.db
 dist/
 .astro/
 .vercel/
+
+# Raw customer STL drops (processed copies live in public/models/customer)
+3d print stl file/

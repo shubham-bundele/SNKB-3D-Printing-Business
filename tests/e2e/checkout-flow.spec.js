@@ -195,24 +195,25 @@ test.describe('SNKB 3D Studio E2E Suite', () => {
     await swatchBtn.click();
     await expect(page.getByText(/Signal Orange · Tough PLA\+/)).toBeVisible();
 
-    // 5. Click "Quote This Design (.STL)" on ESP32 WLED Controller Case in catalog
-    const esp32QuoteBtn = page.locator('button.quote-design-btn[data-name="esp32-wled-controller-case.stl"]');
-    await expect(esp32QuoteBtn).toBeVisible();
-    await esp32QuoteBtn.click();
+    // 5. Click "Quote This Design (.STL)" on the real 6mm Bag Seal Clip in catalog
+    //    (Phase 30: the catalog is built from the genuine customer STL archive)
+    const bagClipQuoteBtn = page.locator('button.quote-design-btn[data-name="bag-clip-6mm.3mf"]');
+    await expect(bagClipQuoteBtn).toBeVisible();
+    await bagClipQuoteBtn.click();
 
     // 6. Assert model loads into Three.js arena and triggers quote calculation
     await expect(page.locator('#instant-quote canvas')).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText('esp32-wled-controller-case.stl', { exact: true }).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('6mm Spring Bag Seal Clip').first()).toBeVisible({ timeout: 20_000 });
 
-    // 7. Assert quote details reflect the exact 95 x 65 x 32 mm dimensions and price
-    await expect(page.getByText(/X:\s*95\.00\s*mm/)).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(/Y:\s*65\.00\s*mm/)).toBeVisible();
-    await expect(page.getByText(/Z:\s*32\.00\s*mm/)).toBeVisible();
+    // 7. Assert quote details reflect the exact real mesh dims (35 x 14.8 x 10 mm)
+    await expect(page.getByText(/X:\s*35\.00\s*mm/)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/Y:\s*14\.80\s*mm/)).toBeVisible();
+    await expect(page.getByText(/Z:\s*10\.00\s*mm/)).toBeVisible();
     await expect(page.getByText('Instant 3D Print Quote Breakdown')).toBeVisible();
-    await expect(page.getByText(/₹(355|389|421|446|449|464|568|611)\.00/).first()).toBeVisible();
+    await expect(page.getByText(/\u20b9149\.00/).first()).toBeVisible();
     await expect(page.getByRole('button', { name: /Proceed to Instant UPI Checkout/ })).toBeVisible();
 
-    // 8. Assert Z-Axis Cross-Section cut slider toggles and displays telemetry
+  // 8. Assert Z-Axis Cross-Section cut slider toggles and displays telemetry
     const crossSectionBtn = page.getByRole('button', { name: /Cross-Section/i });
     await expect(crossSectionBtn).toBeVisible();
     await crossSectionBtn.click();

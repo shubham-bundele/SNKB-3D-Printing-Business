@@ -5,7 +5,6 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import {
   saveWorkspaceModel,
@@ -34,9 +33,12 @@ import {
 } from './stlAnalysis';
 import UpiPaymentQr from './UpiPaymentQr';
 import { buildShellExplodableGroup, analyzeMeshShells, applyLayerSwapVertexColors, updateExplodableGroup, getPartNamesForDesign } from '../utils/explodableAssembly';
-import { PROCEDURAL_DESIGNS, createFDMLayerBumpTexture } from '../utils/physicalAssemblies';
+import { createFDMLayerBumpTexture, createPEIBumpTexture } from '../utils/fdmTextures';
+import { loadStudioEnvironment } from '../utils/studioEnvironment';
+import { frameObjectToCamera } from '../utils/cameraFraming';
 import { detectAutoBrim, BRIM_WEIGHT_G, LAYER_SWAP_FEE_INR, exceedsBuildVolume } from '../utils/pricingEngine';
 import { resolvePixelRatio, attachTouchScrollLock } from '../utils/viewerTouchControls';
+import { CUSTOMER_MODEL_GALLERY, getCustomerModelById } from '../data/customerModels';
 
 const SUPPORT_GRID_MM = 6;
 const SUPPORT_PILLAR_COLOR = 0x10b981;
@@ -254,35 +256,19 @@ const seatMeshOnPlate = (mesh) => {
 };
 
 /**
- * Dynamic Camera Auto-Framing: positions PerspectiveCamera and OrbitControls.target
- * based on the object's bounding sphere with generous padding (>20% margin) to prevent
- * clipping in any aspect ratio (minimum distance 210mm).
+ * Dynamic Camera Auto-Framing: delegates to the shared `frameObjectToCamera`
+ * engine (src/utils/cameraFraming.js). Computes the exact THREE.Box3 + center +
+ * bounding sphere, derives camera.near/far FROM THE MODEL's own size
+ * (÷100 / ×100 of the bounding-sphere diameter), pulls the camera back along a
+ * fixed 3/4 studio bearing so the whole model fits inside both FOVs with ≥30%
+ * margin, and pins OrbitControls.target to the exact bbox center so orbiting
+ * pivots on the model — never swinging it off-screen or clipping it.
  */
 const fitCameraToObject = (camera, controls, object, coverage = 0.70) => {
-  if (!camera || !controls || !object) return;
-  object.updateMatrixWorld(true);
-  const box = new THREE.Box3().setFromObject(object);
-  const sphere = box.getBoundingSphere(new THREE.Sphere());
-  const center = sphere.center;
-  const radius = Math.max(sphere.radius, 15);
-
-  const fovRad = THREE.MathUtils.degToRad(camera.fov || 45);
-  const aspect = camera.aspect || 1;
-  const horizontalFov = 2 * Math.atan(Math.tan(fovRad / 2) * aspect);
-
-  const targetRadius = radius / Math.max(0.1, Math.min(coverage, 0.70));
-  const distVertical = targetRadius / Math.sin(fovRad / 2);
-  const distHorizontal = targetRadius / Math.sin(horizontalFov / 2);
-  const distance = Math.max(distVertical, distHorizontal, radius * 2.6, 210);
-
-  const dir = new THREE.Vector3(0.75, 0.65, 0.85).normalize();
-  controls.target.set(0, center.y, 0);
-  camera.position.set(dir.x * distance, center.y + dir.y * distance, dir.z * distance);
-  camera.near = 0.5;
-  camera.far = 4000;
-  camera.updateProjectionMatrix();
-  camera.lookAt(0, center.y, 0);
-  controls.update();
+  return frameObjectToCamera(camera, controls, object, {
+    coverage,
+    minRadius: 15,
+  });
 };
 
 export default function StlViewer() {
@@ -342,8 +328,6 @@ export default function StlViewer() {
   const [assemblyKind, setAssemblyKind] = useState('single-piece'); // 'multi-part' | 'print-in-place' | 'single-piece'
   const [canExplode, setCanExplode] = useState(false);
   const [shellInfo, setShellInfo] = useState(null); // { shellCount }
-  // Procedural physical assembly (quick-sample showpieces): real named parts.
-  const [proceduralMeta, setProceduralMeta] = useState(null); // { designKey, partNames[] }
   // Single-extruder pause-at-height layer swap (no AMS): second color only via Z split
   const [layerSwapEnabled, setLayerSwapEnabled] = useState(false);
   const [pauseHeightMm, setPauseHeightMm] = useState(3);
@@ -380,10 +364,19 @@ export default function StlViewer() {
   const canExplodeRef = useRef(false);
   useEffect(() => { shellInfoRef.current = shellInfo; }, [shellInfo]);
   useEffect(() => { canExplodeRef.current = canExplode; }, [canExplode]);
+  // Latest filament/wireframe choices for non-reactive paths (overflow tint clear).
+  const selectedMaterialRef = useRef(selectedMaterial);
+  const selectedAccentMaterialRef = useRef(selectedAccentMaterial);
+  const isWireframeRef = useRef(isWireframe);
+  useEffect(() => { selectedMaterialRef.current = selectedMaterial; }, [selectedMaterial]);
+  useEffect(() => { selectedAccentMaterialRef.current = selectedAccentMaterial; }, [selectedAccentMaterial]);
+  useEffect(() => { isWireframeRef.current = isWireframe; }, [isWireframe]);
 
   // Industrial arena overlays & live mirrors (refs avoid per-frame re-renders)
   const seatedBoxRef = useRef(null);
   const bboxHelperRef = useRef(null);
+  const overflowTintActiveRef = useRef(false);
+  const assembledSeatedBoxRef = useRef(null);
   const scanMeshRef = useRef(null);
   const scanRef = useRef({ active: false, t0: 0, dur: 1800, maxY: 0 });
   const clipPlaneRef = useRef(new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000));
@@ -391,6 +384,7 @@ export default function StlViewer() {
   const [crossSectionProgress, setCrossSectionProgress] = useState(100); // 1 to 100%
   const crossSectionPlaneMeshRef = useRef(null);
   const gridRef = useRef(null);
+  const peiSheetRef = useRef(null);
   const measureGroupRef = useRef(null);
   const tagRefs = useRef({});
   const weightRef = useRef(0);
@@ -486,9 +480,6 @@ export default function StlViewer() {
   const updateMeshMaterial = (matName, accentMatName, wireframe, supports) => {
     const obj = currentMeshRef.current;
     if (!obj) return;
-    // Procedural physical assemblies keep factory filament colors — spool
-    // preview must never repaint real named parts.
-    if (obj.userData?.isProceduralAssembly) return;
     const preset = MATERIAL_PRESETS.find((p) => p.name === matName) || MATERIAL_PRESETS[0];
     const accentPreset = MATERIAL_PRESETS.find((p) => p.name === accentMatName) || getContrastPreset(preset.name);
 
@@ -671,13 +662,6 @@ export default function StlViewer() {
   const applyExplodedOffset = (progress) => {
     const obj = currentMeshRef.current;
     if (!obj) return;
-
-    // P0. Procedural physical assemblies: per-part vectors + spin via controller
-    if (obj.userData?.isProceduralAssembly && typeof obj.userData.update === 'function') {
-      updateExplodableGroup(obj, progress / 100, 1.0);
-      refreshOverlays();
-      return;
-    }
 
     // A. Multi-part No-AMS models (with separate base and accent meshes)
     const accent = obj.children ? obj.children.find((c) => c.name === 'accent') : null;
@@ -865,8 +849,9 @@ export default function StlViewer() {
     scene.background = new THREE.Color(0x18181b); // Zinc-900 dark slate
     sceneRef.current = scene;
 
-    // 2. Camera
-    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 2000);
+    // 2. Camera — clipping planes are re-derived from each loaded model in
+    //    fitCameraToObject (÷100 / ×100 of its bounding-sphere diameter).
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.5, 4000);
     camera.position.set(160, 160, 240);
     cameraRef.current = camera;
 
@@ -892,16 +877,12 @@ export default function StlViewer() {
       console.log('[StlViewer] WebGL context restored.');
     });
 
-    // RoomEnvironment for realistic specular reflections and bevel highlights
+    // Real studio HDRI for believable PLA+ reflections (RoomEnvironment fires
+    // instantly as baseline; the HDR upgrades it in-place once streamed).
     try {
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
-      pmremGenerator.compileEquirectangularShader();
-      const envScene = new RoomEnvironment();
-      scene.environment = pmremGenerator.fromScene(envScene, 0.04).texture;
-      envScene.dispose();
-      pmremGenerator.dispose();
+      loadStudioEnvironment(renderer, scene);
     } catch (envErr) {
-      console.warn('[StlViewer] Could not initialize RoomEnvironment:', envErr);
+      console.warn('[StlViewer] Could not initialize studio environment:', envErr);
     }
 
     // 4. OrbitControls
@@ -911,6 +892,8 @@ export default function StlViewer() {
     // Allow dipping ~153° below the horizon so operators can orbit underneath
     // and visually inspect downward-facing support warnings.
     controls.maxPolarAngle = Math.PI * 0.85;
+    // min/maxDistance are re-scaled to the framed model's bounding sphere on
+    // every load (frameObjectToCamera) — these are just initial defaults.
     controls.minDistance = 30;
     controls.maxDistance = 600;
     controls.target.set(0, 30, 0);
@@ -961,16 +944,49 @@ export default function StlViewer() {
     rimLight.position.set(-90, 130, -110);
     scene.add(rimLight);
 
-    // 6. Build Plate Representation (180x180mm print bed).
-    // Grid + edge rails give the physical read; a ShadowMaterial catcher shows
-    // only the soft shadow from above and stays see-through from below, so
-    // operators can orbit underneath and inspect support warnings.
+    // 6. Build Plate Representation (180x180mm Bambu Lab A1 Mini bed).
+    // Textured PEI powder-coat sheet + 10mm grid + edge rails give the physical
+    // read; a ShadowMaterial catcher shows only the soft shadow from above and
+    // stays see-through from below, so operators can orbit underneath and
+    // inspect support warnings.
+    const peiBumpMap = createPEIBumpTexture();
+    if (peiBumpMap) {
+      const peiSheet = new THREE.Mesh(
+        new THREE.PlaneGeometry(180, 180),
+        new THREE.MeshStandardMaterial({
+          color: 0x23262b,
+          roughness: 0.78,
+          metalness: 0.2,
+          bumpMap: peiBumpMap,
+          bumpScale: 0.02,
+          transparent: true,
+          opacity: 0.42,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        })
+      );
+      peiSheet.rotation.x = -Math.PI / 2;
+      peiSheet.position.y = 0.015;
+      peiSheet.receiveShadow = true;
+      scene.add(peiSheet);
+      peiSheetRef.current = peiSheet;
+    }
+
     const gridHelper = new THREE.GridHelper(180, 18, 0xea580c, 0x242832);
     gridHelper.position.y = 0.1;
     gridHelper.material.transparent = true;
     gridHelper.material.opacity = 0.55;
     scene.add(gridHelper);
     gridRef.current = gridHelper;
+
+    // Center alignment crosshair (Bambu-style first-layer calibration mark)
+    const bedCrossPts = new Float32Array([-12, 0.12, 0, 12, 0.12, 0, 0, 0.12, -12, 0, 0.12, 12]);
+    const bedCrossGeo = new THREE.BufferGeometry();
+    bedCrossGeo.setAttribute('position', new THREE.BufferAttribute(bedCrossPts, 3));
+    scene.add(new THREE.LineSegments(
+      bedCrossGeo,
+      new THREE.LineBasicMaterial({ color: 0x00ff66, transparent: true, opacity: 0.85 })
+    ));
 
     const catcher = new THREE.Mesh(
       new THREE.PlaneGeometry(180, 180),
@@ -1263,6 +1279,13 @@ export default function StlViewer() {
         gridRef.current.geometry.dispose();
         gridRef.current.material.dispose();
         gridRef.current = null;
+      }
+      if (peiSheetRef.current) {
+        scene.remove(peiSheetRef.current);
+        peiSheetRef.current.geometry.dispose();
+        if (peiSheetRef.current.material.map) peiSheetRef.current.material.map.dispose();
+        peiSheetRef.current.material.dispose();
+        peiSheetRef.current = null;
       }
       if (crossSectionPlaneMeshRef.current) {
         scene.remove(crossSectionPlaneMeshRef.current);
@@ -1573,6 +1596,23 @@ export default function StlViewer() {
     mesh.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(mesh);
     seatedBoxRef.current = box.clone();
+
+    // Detect exploded pose (accent lifted / explodable clones visible) so the
+    // +Y separation lift never falsely trips the 180mm build-volume check:
+    // overflow is judged on the assembled print footprint.
+    let explodedNow = false;
+    if (mesh.userData?.explodableGroup?.visible) explodedNow = true;
+    mesh.traverse((child) => {
+      if (child.name === 'accent' && child.position && (Math.abs(child.position.z) > 0.001 || Math.abs(child.position.y) > 0.001)) {
+        explodedNow = true;
+      }
+    });
+    if (!explodedNow) assembledSeatedBoxRef.current = box.clone();
+
+    // While exploded, keep judging (and tinting) against the last assembled box;
+    // the bbox helper also hugs that honest footprint instead of the spread pose.
+    const effectiveBox = explodedNow && assembledSeatedBoxRef.current ? assembledSeatedBoxRef.current : box;
+
     if (bboxHelperRef.current) {
       scene.remove(bboxHelperRef.current);
       bboxHelperRef.current.geometry.dispose();
@@ -1580,23 +1620,60 @@ export default function StlViewer() {
       bboxHelperRef.current = null;
     }
     const boxSize = new THREE.Vector3();
-    box.getSize(boxSize);
+    effectiveBox.getSize(boxSize);
     const isExceeded =
       boxSize.x > STANDARD_BUILD_LIMIT.x ||
       boxSize.y > STANDARD_BUILD_LIMIT.y ||
       boxSize.z > STANDARD_BUILD_LIMIT.z ||
-      box.min.x < -90.5 ||
-      box.max.x > 90.5 ||
-      box.min.z < -90.5 ||
-      box.max.z > 90.5 ||
-      box.max.y > 180.5;
+      effectiveBox.min.x < -90.5 ||
+      effectiveBox.max.x > 90.5 ||
+      effectiveBox.min.z < -90.5 ||
+      effectiveBox.max.z > 90.5 ||
+      effectiveBox.max.y > 180.5;
 
     const helperColor = isExceeded ? 0xFF2A4B : 0x00FF66;
-    const helper = new THREE.Box3Helper(box, helperColor);
+    const helper = new THREE.Box3Helper(effectiveBox, helperColor);
     helper.material.transparent = true;
     helper.material.opacity = isExceeded ? 0.95 : 0.85;
     bboxHelperRef.current = helper;
     scene.add(helper);
+
+    // Red alarm tint: paint the model material so an overflowed part is
+    // unmissable in the arena. Skipped in support/layer-swap vertex-color
+    // modes (white base + per-face colors) and for guide line groups.
+    const shouldTint = isExceeded && !explodedNow;
+    // Re-apply while overflowing (repaints after user material changes) and
+    // clear exactly on the overflowing→clear transition.
+    if (shouldTint || (overflowTintActiveRef.current && !shouldTint)) {
+      overflowTintActiveRef.current = shouldTint;
+      try {
+        if (shouldTint) {
+          const TINT = 0xFF2A4B;
+          const traverseTint = (target) => {
+            target.traverse((child) => {
+              if (child.isLine || child.isLineSegments) return;
+              if (child.material && !child.material.vertexColors) {
+                child.material.color.set(TINT);
+                child.material.needsUpdate = true;
+              }
+            });
+          };
+          if (mesh.userData?.explodableGroup) traverseTint(mesh.userData.explodableGroup);
+          else traverseTint(mesh);
+        } else {
+          // Clearing: repaint honest filament colors from the current presets
+          // (supports visual mode keeps its white base + per-face colors).
+          updateMeshMaterial(
+            selectedMaterialRef.current || selectedMaterial,
+            selectedAccentMaterialRef.current || selectedAccentMaterial,
+            isWireframeRef.current || false,
+            showSupportsRef.current
+          );
+        }
+      } catch (tintErr) {
+        console.warn('[StlViewer] Overflow tint failed:', tintErr);
+      }
+    }
   };
 
   const getActiveDensity = () => {
@@ -1880,7 +1957,9 @@ export default function StlViewer() {
     setIsOrienting(false);
     // New geometry is not mounted yet — drop back to standby until scene.add.
     setMeshReady(false);
-    setProceduralMeta(null);
+    // Reset alarm-tint state: fresh geometry gets fresh (honest) materials.
+    overflowTintActiveRef.current = false;
+    assembledSeatedBoxRef.current = null;
     faceDataRef.current = null;
     printBoxRef.current = null;
     orientQuatRef.current = { ...IDENTITY_QUAT };
@@ -2328,7 +2407,7 @@ export default function StlViewer() {
 
   // Switch filament material preview
   const handleSelectMaterial = (preset) => {
-    if (canExplode && multiPartMeta && !multiPartMeta.procedural && activePlate === 'accent') {
+    if (canExplode && multiPartMeta && activePlate === 'accent') {
       setSelectedAccentMaterial(preset.name);
       updateMeshMaterial(selectedMaterial, preset.name, isWireframe, showSupports);
     } else {
@@ -2339,11 +2418,15 @@ export default function StlViewer() {
     if (showSupports) {
       setShowSupports(false);
       updateMeshMaterial(
-        multiPartMeta && !multiPartMeta.procedural && activePlate === 'accent' ? selectedMaterial : preset.name,
-        multiPartMeta && !multiPartMeta.procedural && activePlate === 'accent' ? preset.name : selectedAccentMaterial,
+        multiPartMeta && activePlate === 'accent' ? selectedMaterial : preset.name,
+        multiPartMeta && activePlate === 'accent' ? preset.name : selectedAccentMaterial,
         isWireframe,
         false
       );
+    }
+    // Re-arm the red overflow alarm: the material repaint above resets colors.
+    if (overflowTintActiveRef.current) {
+      refreshOverlays();
     }
   };
 
@@ -2352,6 +2435,10 @@ export default function StlViewer() {
     const next = !isWireframe;
     setIsWireframe(next);
     updateMeshMaterial(selectedMaterial, selectedAccentMaterial, next, showSupports);
+    // Re-arm the red overflow alarm after the full repaint.
+    if (overflowTintActiveRef.current) {
+      refreshOverlays();
+    }
   };
 
   // Toggle 360-degree auto-rotation
@@ -2923,10 +3010,12 @@ export default function StlViewer() {
     setSupportWeightInfo(null);
     supportWeightRef.current = null;
     setShellInfo(null);
-    setProceduralMeta(null);
     setAssemblyKind('single-piece');
     setCanExplode(false);
     setMultiPartMeta(null);
+    // Reset alarm-tint state so the next load starts with honest materials.
+    overflowTintActiveRef.current = false;
+    assembledSeatedBoxRef.current = null;
     setExplodedProgress(0);
     setIsExploded(false);
     setPolyCount(null);
@@ -3181,40 +3270,12 @@ export default function StlViewer() {
       }
 
       if (!combinedBlob) {
-        try {
-          const res = await fetch(samplePath);
-          if (!res.ok) {
-            throw new Error(`HTTP ${res.status} fetching ${samplePath}`);
-          }
-          combinedBlob = await res.blob();
-        } catch (fetchErr) {
-          console.warn(`[StlViewer] Sample fetch failed for ${samplePath}, generating procedural fallback binary STL:`, fetchErr);
-          const fallbackGeo = new THREE.TorusKnotGeometry(25, 7.5, 64, 16, 2, 3);
-          fallbackGeo.computeVertexNormals();
-          fallbackGeo.computeBoundingBox();
-          const minY = fallbackGeo.boundingBox.min.y;
-          fallbackGeo.translate(0, -minY, 0);
-
-          const g = fallbackGeo.index ? fallbackGeo.toNonIndexed() : fallbackGeo;
-          const pos = g.attributes.position.array;
-          const triCount = pos.length / 9;
-          const buffer = new ArrayBuffer(84 + triCount * 50);
-          const view = new DataView(buffer);
-          view.setUint32(80, triCount, true);
-          let offset = 84;
-          for (let i = 0; i < triCount; i++) {
-            offset += 12; // normal
-            for (let v = 0; v < 3; v++) {
-              const idx = (i * 3 + v) * 3;
-              view.setFloat32(offset, pos[idx], true);
-              view.setFloat32(offset + 4, pos[idx + 1], true);
-              view.setFloat32(offset + 8, pos[idx + 2], true);
-              offset += 12;
-            }
-            offset += 2;
-          }
-          combinedBlob = new Blob([buffer], { type: 'application/octet-stream' });
+        const res = await fetch(samplePath);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} fetching ${samplePath}`);
         }
+        // Only the real STL file is ever rendered — no fabricated stand-in blob.
+        combinedBlob = await res.blob();
       }
 
       const file = new File([combinedBlob], name, { type: 'application/octet-stream' });
@@ -3225,6 +3286,23 @@ export default function StlViewer() {
     }
   };
 
+  // Real Customer STL chips (genuine files served from /models/customer/).
+  // Sorted lightest-first so the fast loaders come first in the rail.
+  const customerChips = [...CUSTOMER_MODEL_GALLERY].sort((a, b) => a.sizeMB - b.sizeMB);
+  const renderCustomerChip = (m) => (
+    <button
+      key={m.id}
+      type="button"
+      onClick={() => loadSample(m.file, m.fileName)}
+      className={`btn-mech cut-sm shrink-0 px-2 py-1 text-[10px] whitespace-nowrap ${
+        m.kind === '3mf' ? 'text-cyan-300 border-cyan-900/70' : 'text-amber-200/90 border-amber-900/70'
+      } ${m.heavy ? 'opacity-90' : ''}`}
+      title={`${m.blurb} — real ${m.kind.toUpperCase()} file, ${m.sizeMB} MB${m.heavy ? ' (large, loads in a few seconds)' : ''}`}
+    >
+      {m.emoji} {m.label}
+    </button>
+  );
+
   const removeCurrentMesh = () => {
     const scene = sceneRef.current;
     if (currentMeshRef.current) {
@@ -3233,181 +3311,6 @@ export default function StlViewer() {
       currentMeshRef.current = null;
     }
     clearSupportPillars();
-  };
-
-  // Load a real procedural physical assembly (named multi-component object).
-  // Analysis runs over the merged part geometries so volume, supports and
-  // pricing stay honest; display keeps discrete named meshes for explode.
-  const renderProceduralAssembly = (designKey) => {
-    const entry = PROCEDURAL_DESIGNS[designKey];
-    const scene = sceneRef.current;
-    if (!entry || !scene) return;
-    try {
-      setLoading(true);
-      setError(null);
-      setConfirmedOrder(null);
-      setConfirmationError(null);
-      setDeliveryQuote(null);
-      setDeliveryError(null);
-      orientAnimRef.current = null;
-      if (explodeAnimRef.current) {
-        cancelAnimationFrame(explodeAnimRef.current);
-        explodeAnimRef.current = null;
-      }
-      setExplodedProgress(0);
-      setIsExploded(false);
-      setIsOrienting(false);
-      setMeshReady(false);
-      setSupportStats(null);
-      setOrientResult(null);
-      setPolyCount(null);
-      setProceduralMeta(null);
-      removeCurrentMesh();
-      orientQuatRef.current = { ...IDENTITY_QUAT };
-
-      const built = entry.build();
-      const group = built.group;
-      const merged = built.mergedGeometry;
-
-      const bb = new THREE.Box3().setFromObject(group);
-      const rawDim = {
-        x: Number((bb.max.x - bb.min.x).toFixed(2)),
-        y: Number((bb.max.y - bb.min.y).toFixed(2)),
-        z: Number((bb.max.z - bb.min.z).toFixed(2)),
-      };
-      rawDimensionsRef.current = rawDim;
-      setRawDimensions(rawDim);
-      setScalePercent(100);
-      setIsInchConverted(false);
-      setBrimDismissed(false);
-      const maxDim = Math.max(rawDim.x, rawDim.y, rawDim.z);
-      setIsTinyModel(maxDim < 12);
-
-      const faceData = computeFaceData(merged.getAttribute('position').array);
-      faceDataRef.current = faceData;
-      setPolyCount(faceData.count);
-      printBoxRef.current = {
-        min: { x: bb.min.x, y: bb.min.y, z: bb.min.z },
-        max: { x: bb.max.x, y: bb.max.y, z: bb.max.z },
-      };
-      // Per-part support paint in print space (parts model +Z-up natively)
-      group.traverse((child) => {
-        if (!child.isMesh || !child.geometry) return;
-        try {
-          const fd = computeFaceData(child.geometry.getAttribute('position').array);
-          child.userData.faceData = fd;
-          applySupportColors(child.geometry, fd, IDENTITY_QUAT);
-        } catch {}
-      });
-      const scored = evaluatePose(faceData, IDENTITY_QUAT, printBoxRef.current);
-      setSupportStats({
-        overhangArea: scored.overhangArea,
-        fraction: scored.overhangFraction,
-        contactArea: scored.contactArea,
-        supportArea: scored.supportArea,
-      });
-
-      const volMm3 = Math.max(1, Math.round(built.volumeMm3));
-      const surfAreaMm2 = Math.max(1, Math.round(built.surfaceAreaMm2));
-      const computedQuote = {
-        success: true,
-        currency: 'INR',
-        orderId: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-        fileName: entry.fileName,
-        volumeMm3: volMm3,
-        surfaceAreaMm2: surfAreaMm2,
-        dimensions: rawDim,
-        boundingBox: rawDim,
-        material: selectedMaterialType,
-        profile: selectedProfile,
-        layerHeightMm: layerHeightMm || 0.20,
-        infillPercent: infillPercent || 20,
-        quantity: partQuantity || 1,
-        supportsEnabled: Boolean(supportsEnabled),
-        clientCalculated: true,
-        proceduralDesign: designKey,
-      };
-      const isOverBuildVolume = rawDim.x > STANDARD_BUILD_LIMIT.x || rawDim.y > STANDARD_BUILD_LIMIT.y || rawDim.z > STANDARD_BUILD_LIMIT.z;
-      if (isOverBuildVolume) {
-        setError('Model exceeds the maximum build volume of 180 × 180 × 180 mm.');
-        setQuoteData({
-          success: false,
-          error: 'build_volume_exceeded',
-          message: 'Model exceeds the maximum build volume of 180 × 180 × 180 mm.',
-          dimensions: rawDim,
-          boundingBox: rawDim,
-        });
-        setHasActiveModel(false);
-      } else {
-        setHasActiveModel(true);
-        setQuoteData(computedQuote);
-        saveActiveQuote({
-          fileName: entry.fileName,
-          dimensions: rawDim,
-          volumeMm3: volMm3,
-          surfaceAreaMm2: surfAreaMm2,
-          settings: {
-            materialType: selectedMaterialType,
-            profile: selectedProfile,
-            infillPercent,
-            layerHeightMm,
-            supportsEnabled,
-            quantity: partQuantity,
-            material: selectedMaterial,
-            accentMaterial: selectedAccentMaterial,
-            scalePercent: 100,
-            addOns,
-          },
-          quoteData: computedQuote,
-          buffer: null,
-        });
-      }
-
-      setFileName(entry.fileName);
-      pendingAssemblyRef.current = { assemblyKind: 'multi-part', canExplode: true, partCount: entry.partCount };
-      group.quaternion.copy(buildPrintToSceneQuat());
-      scene.add(group);
-      currentMeshRef.current = group;
-      // Mesh is 100% mounted — badge, telemetry and receipt go live together.
-      setMeshReady(true);
-      setMultiPartMeta({
-        assemblyType: 'procedural-snap',
-        procedural: true,
-        designKey,
-        baseTriangles: faceData.count,
-        accentTriangles: 0,
-      });
-      setAssemblyKind('multi-part');
-      setCanExplode(true);
-      setShellInfo({ shellCount: built.parts.length, source: 'procedural-assembly' });
-      setProceduralMeta({ designKey, partNames: built.parts });
-      setExplodedProgress(0);
-      setIsExploded(false);
-
-      const seatedBox = seatMeshOnPlate(group);
-      const size = seatedBox.getSize(new THREE.Vector3());
-      const unifiedDims = {
-        x: Number(size.x.toFixed(1)),
-        y: Number(size.z.toFixed(1)),
-        z: Number(size.y.toFixed(1)),
-      };
-      setRawDimensions(unifiedDims);
-      rawDimensionsRef.current = unifiedDims;
-      refreshOverlays();
-      updateCrossSection(crossSectionActive, crossSectionProgress);
-      startScan(size.y);
-      fitCameraToObject(cameraRef.current, controlsRef.current, group, 0.70);
-      try {
-        regenerateSupportPillars();
-      } catch (pillarErr) {
-        console.warn('Support pillar generation failed:', pillarErr);
-      }
-    } catch (err) {
-      console.error('Procedural assembly failed:', err);
-      setError('Failed to build procedural assembly: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Listen for catalog "Quote This Design" events, hero "load-model" handoff & deep-links
@@ -3487,7 +3390,7 @@ export default function StlViewer() {
 
   // Cycle to next filament material preset (for swatch dial & mechanical style click)
   const handleCycleMaterial = () => {
-    const targetName = (canExplode && multiPartMeta && !multiPartMeta.procedural && activePlate === 'accent') ? selectedAccentMaterial : selectedMaterial;
+    const targetName = (canExplode && multiPartMeta && activePlate === 'accent') ? selectedAccentMaterial : selectedMaterial;
     const currentIndex = MATERIAL_PRESETS.findIndex((p) => p.name === targetName);
     const nextIndex = (currentIndex + 1) % MATERIAL_PRESETS.length;
     handleSelectMaterial(MATERIAL_PRESETS[nextIndex]);
@@ -3800,30 +3703,14 @@ export default function StlViewer() {
               >
                 ⚙️ Planetary Gear
               </button>
-              <button
-                type="button"
-                onClick={() => loadSample('/samples/tiny_bracket_10mm_binary.stl', 'tiny_bracket_10mm.stl')}
-                className="btn-mech cut-sm px-2 py-1 text-amber-300 border-amber-900"
-                title="Tiny 10mm model — tests Unit Auto-Detection (< 12mm)"
-              >
-                📏 10mm Inch
-              </button>
-              <button
-                type="button"
-                onClick={() => loadSample('/samples/cube_20mm_binary.stl', 'cube_20mm.stl')}
-                className="btn-mech cut-sm px-2 py-1 text-zinc-300"
-                title="Standard 20mm calibration cube"
-              >
-                🧊 20mm Cube
-              </button>
-              <button
-                type="button"
-                onClick={() => loadSample('/samples/oversized_200mm_binary.stl', 'oversized_200mm.stl')}
-                className="btn-mech cut-sm px-2 py-1 text-rose-300 border-rose-900"
-                title="200mm model — triggers 180mm overflow lock"
-              >
-                ⚠️ 200mm Overflow
-              </button>
+              {/* Real Customer STL Archive: every chip is a genuine file served
+                  from /models/customer/ — no synthetic placeholders. */}
+              <div className="flex items-center gap-1.5 w-full min-w-0 mt-1">
+                <span className="telemetry text-[9px] text-[#00FF66] shrink-0">CUSTOMER FILES:</span>
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar min-w-0 touch-rail">
+                  {customerChips.map((m) => renderCustomerChip(m))}
+                </div>
+              </div>
             </div>
             {fileName && (
               <div className="px-3 pb-2 text-xs text-zinc-300 flex items-center gap-2">
@@ -4342,7 +4229,7 @@ export default function StlViewer() {
                   <span className="w-2.5 h-2.5 rounded-full bg-white/80 shadow group-hover:scale-125 transition-transform"></span>
                 </button>
               </div>
-              {canExplode && multiPartMeta && !multiPartMeta.procedural && (
+              {canExplode && multiPartMeta && (
                 <div className="mb-3 p-2 bg-[#00FF66]/10 border border-[#00FF66]/40 rounded text-[11px] font-mono text-zinc-200">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="telemetry text-[10px] text-[#00FF66] font-bold flex items-center gap-1.5">
@@ -4386,26 +4273,6 @@ export default function StlViewer() {
                   </div>
                 </div>
               )}
-              {canExplode && multiPartMeta?.procedural && proceduralMeta && (
-                <div className="mb-3 p-2 bg-[#00FF66]/10 border border-[#00FF66]/40 rounded text-[11px] font-mono text-zinc-200">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="telemetry text-[10px] text-[#00FF66] font-bold flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 bg-[#00FF66] rounded-full animate-pulse"></span>
-                      PHYSICAL ASSEMBLY · {proceduralMeta.partNames.length} PARTS
-                    </span>
-                    <span className="text-[10px] text-zinc-400">FACTORY COLORS</span>
-                  </div>
-                  <div className="text-[10px] text-[#00FF66] mb-1.5">Real Components • 0g AMS Purge Waste</div>
-                  <ul className="space-y-1 text-[10px]">
-                    {proceduralMeta.partNames.map((n, i) => (
-                      <li key={i} className="flex items-center gap-1.5 text-zinc-300">
-                        <span className="text-[#FF6500] font-bold">{String(i + 1).padStart(2, '0')}</span>
-                        <span className="truncate">{n}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
               <div className="grid grid-cols-2 gap-1.5 max-h-52 overflow-y-auto pr-1">
                 {!canExplode && hasActiveModel && (
                   <div className="col-span-2 mb-1 p-2 rounded border border-[#FF6500]/40 bg-[#FF6500]/10 text-[10px] font-mono space-y-2">
@@ -4424,7 +4291,7 @@ export default function StlViewer() {
                   </div>
                 )}
                 {MATERIAL_PRESETS.map((preset) => {
-                  const isCurrent = canExplode && multiPartMeta && !multiPartMeta.procedural && activePlate === 'accent'
+                  const isCurrent = canExplode && multiPartMeta && activePlate === 'accent'
                     ? selectedAccentMaterial === preset.name
                     : selectedMaterial === preset.name;
                   const spoolItem = spools.find((s) => s.color_name.toLowerCase() === preset.name.toLowerCase());
@@ -4492,23 +4359,12 @@ export default function StlViewer() {
               {shellInfo && shellInfo.shellCount >= 2 && !multiPartMeta && (
                 <div className="px-2 py-1.5 rounded border border-[#00FF66]/40 bg-[#00FF66]/10 text-[#00FF66] text-[10px]">🧩 {shellInfo.shellCount} Separate Parts Detected — Click Explode to Inspect Assembly</div>
               )}
-              {multiPartMeta && !multiPartMeta.procedural && (
+              {multiPartMeta && (
                 <div className="px-2 py-1.5 rounded border border-[#00FF66]/40 bg-black/60 text-[10px] text-zinc-200 leading-relaxed">
                   <span className="text-zinc-500 block">SEPARATING PHYSICAL SUB-ASSEMBLIES</span>
                   <span className="text-[#FF6500] font-bold">▼ {partNames.base}</span>
                   <span className="text-zinc-600 mx-1">·</span>
                   <span className="text-[#00FF66] font-bold">▲ {partNames.accent}</span>
-                </div>
-              )}
-              {multiPartMeta?.procedural && proceduralMeta && (
-                <div className="px-2 py-1.5 rounded border border-[#00FF66]/40 bg-black/60 text-[10px] text-zinc-200 leading-relaxed">
-                  <span className="text-zinc-500 block">SEPARATING {proceduralMeta.partNames.length} PHYSICAL PARTS</span>
-                  {proceduralMeta.partNames.map((n, i) => (
-                    <span key={i} className="block truncate">
-                      <span className="text-[#FF6500] font-bold">{String(i + 1).padStart(2, '0')}</span>
-                      <span className="text-zinc-300"> {n}</span>
-                    </span>
-                  ))}
                 </div>
               )}
               <div className="flex items-center justify-between gap-2">
@@ -4685,12 +4541,7 @@ export default function StlViewer() {
               <span className="telemetry text-[10px] text-zinc-500">180x180mm</span>
             </div>
             <div className="flex items-center gap-2">
-              {canExplode && multiPartMeta?.procedural && proceduralMeta ? (
-                <span className="telemetry text-[10px] text-[#00FF66] border border-[#00FF66]/50 bg-[#00FF66]/10 px-2.5 py-1 flex items-center gap-1.5 shadow-[0_0_8px_rgba(0,255,102,0.2)]">
-                  <span className="w-1.5 h-1.5 bg-[#00FF66] rounded-full animate-pulse"></span>
-                  PROCEDURAL {proceduralMeta.partNames.length}-PART ASSEMBLY
-                </span>
-              ) : canExplode && multiPartMeta ? (
+              {canExplode && multiPartMeta ? (
                 <span className="telemetry text-[10px] text-[#00FF66] border border-[#00FF66]/50 bg-[#00FF66]/10 px-2.5 py-1 flex items-center gap-1.5 shadow-[0_0_8px_rgba(0,255,102,0.2)]">
                   <span className="w-1.5 h-1.5 bg-[#00FF66] rounded-full animate-pulse"></span>
                   🧩 MULTI-PART ASSEMBLY (EXPLODABLE)
@@ -5270,12 +5121,8 @@ export default function StlViewer() {
         <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur border border-[#2b2e36] px-3 py-1.5 text-[11px] text-zinc-400 font-mono pointer-events-none flex flex-wrap items-center gap-2 cut-sm">
           <span>Print Bed Grid: 180×180mm</span>
           <span className="text-[#FF6500]">•</span>
-          {multiPartMeta?.procedural && proceduralMeta ? (
-            <span className="text-[#00FF66]">Procedural · {proceduralMeta.partNames.length} physical parts</span>
-          ) : (
-            <span>Plate 1: {selectedMaterial}</span>
-          )}
-          {multiPartMeta && !multiPartMeta.procedural && (
+          <span>Plate 1: {selectedMaterial}</span>
+          {multiPartMeta && (
             <>
               <span className="text-[#00FF66]">•</span>
               <span className="text-[#00FF66]">Plate 2: {selectedAccentMaterial}</span>
@@ -5353,6 +5200,13 @@ export default function StlViewer() {
           <button type="button" onClick={() => loadSample('/models/posable-snap-fit-mecha.stl', 'posable-snap-fit-mecha.stl', { baseUrl: '/models/posable-snap-fit-mecha-base.stl', accentUrl: '/models/posable-snap-fit-mecha-accent.stl', assemblyType: 'snap-fit' })} className="btn-mech cut-sm px-2.5 py-1 text-[11px] text-[#00FF66] border-[#00FF66]/40" title="Load the posable snap-fit mecha action figure (Explodable)">🤖 Snap-Fit Mecha</button>
           <button type="button" onClick={() => loadSample('/models/esp32-wled-controller-case.stl', 'esp32-wled-controller-case.stl', { baseUrl: '/models/esp32-wled-controller-case-base.stl', accentUrl: '/models/esp32-wled-controller-case-accent.stl', assemblyType: 'snap-fit' })} className="btn-mech cut-sm px-2.5 py-1 text-[11px] text-[#00FF66] border-[#00FF66]/40" title="Load snap-fit ESP32 enclosure (Explodable)">🧩 ESP32 Case</button>
           <button type="button" onClick={() => loadSample('/models/planetary-gear-fidget-spinner.stl', 'planetary-gear-fidget-spinner.stl', { baseUrl: '/models/planetary-gear-fidget-spinner-base.stl', accentUrl: '/models/planetary-gear-fidget-spinner-accent.stl', assemblyType: 'print-in-place' })} className="btn-mech cut-sm px-2.5 py-1 text-[11px] text-[#00FF66] border-[#00FF66]/40" title="Load the planetary gear fidget spinner (Explodable)">⚙️ Planetary Gear</button>
+          {/* Real Customer STL Archive — genuine files from /models/customer/ */}
+          <div className="flex items-center gap-1.5 w-full min-w-0 mt-0.5">
+            <span className="telemetry text-[9px] text-[#00FF66] shrink-0">CUSTOMER STL ARCHIVE:</span>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar min-w-0 touch-rail">
+              {customerChips.map((m) => renderCustomerChip(m))}
+            </div>
+          </div>
         </div>
 
         {/* Arena footer strip */}
@@ -5657,12 +5511,15 @@ export default function StlViewer() {
             {(() => {
               const calcRatePerG = slicerQuote?.material?.retailRatePerG ?? (selectedMaterialType === 'tpu' ? 3.5 : selectedMaterialType === 'petg' ? 2.5 : 2.0);
               const calcPartWeight = slicerQuote?.partWeightTotalGrams ?? (Number(slicerQuote?.partWeightGrams ?? weight) * partQuantity);
-              const calcPartCost = Number((slicerQuote?.partMaterialCost ?? (calcPartWeight * calcRatePerG)).toFixed(2));
 
               const calcSupportWeight = supportsEnabled ? (slicerQuote?.supportWeightTotalGrams ?? (Number(slicerQuote?.supportWeightGrams ?? 0) * partQuantity)) : 0;
               const calcBrimWeight = slicerQuote?.autoBrim ? (slicerQuote?.brimWeightTotalGrams ?? (Number(slicerQuote?.brimWeightGrams ?? 0) * partQuantity)) : 0;
               const calcSupportBrimWeight = Number((calcSupportWeight + calcBrimWeight).toFixed(1));
-              const calcSupportCost = supportsEnabled ? Number(((slicerQuote?.supportMaterialCost ?? (calcSupportWeight * calcRatePerG)) + (calcBrimWeight * calcRatePerG)).toFixed(2)) : 0;
+              const supportBrimCharged = supportsEnabled || calcBrimWeight > 0;
+              // Weight-derived lines keep the receipt mathematically honest:
+              // batched grams × ₹/g — not unit costs mislabeled as batch totals.
+              const calcPartCost = Number((calcPartWeight * calcRatePerG).toFixed(2));
+              const calcSupportCost = supportBrimCharged ? Number(((calcSupportWeight + calcBrimWeight) * calcRatePerG).toFixed(2)) : 0;
 
               const calcMachineHours = Number(slicerQuote?.totalMachineHours ?? machineHoursLine ?? 0);
               const calcMachineCost = Number((slicerQuote?.batchMachineCost ?? machineLine ?? (calcMachineHours * 25)).toFixed(2));
@@ -5670,12 +5527,15 @@ export default function StlViewer() {
               const calcAddOnsTotal = Number((slicerQuote?.addOns?.total ?? 0).toFixed(2));
               const calcDiscount = Number((slicerQuote?.discountAmount ?? 0).toFixed(2));
               const finalPayable = Number(checkoutTotal || cost || 0);
-              const calcSetupFee = 49.00;
-              const calcMakingCost = Number((slicerQuote?.batchMakingCost ?? (slicerQuote?.unitMakingCost ? slicerQuote.unitMakingCost * partQuantity : (calcPartWeight + calcSupportWeight) * 1.0)).toFixed(2));
+              const calcSetupFee = Number((slicerQuote?.setupFeeINR ?? 49.0).toFixed(2));
+              const calcMakingCost = Number((slicerQuote?.batchMakingCost ?? ((calcPartWeight + calcSupportBrimWeight) * 1.0)).toFixed(2));
 
               // Exact balance check:
               const computedSubtotal = Number((calcPartCost + calcSupportCost + calcMachineCost + calcMakingCost + calcSetupFee + calcAddOnsTotal - calcDiscount).toFixed(2));
               const floorAdjustment = Number(Math.max(0, finalPayable - computedSubtotal).toFixed(2));
+              // Checkout rounds to the nearest rupee: surface a negative line so
+              // the itemized receipt still sums exactly to the payable total.
+              const roundingAdjustment = Number(Math.max(0, computedSubtotal - finalPayable).toFixed(2));
 
               return (
                 <div className="mt-4 bg-black/40 border border-[#2b2e36]/80 cut-sm px-3.5 text-sm">
@@ -5703,11 +5563,11 @@ export default function StlViewer() {
                   {/* Support & Brim Material */}
                   <div className="flex items-center justify-between gap-3 py-2 border-b border-white/5">
                     <span className="text-zinc-300 text-xs">
-                      Support &amp; Brim ({supportsEnabled ? calcSupportBrimWeight.toFixed(1) : '0.0'}g @ ₹{calcRatePerG.toFixed(2)}/g)
+                      Support &amp; Brim ({supportBrimCharged ? calcSupportBrimWeight.toFixed(1) : '0.0'}g @ ₹{calcRatePerG.toFixed(2)}/g)
                       {slicerQuote?.autoBrim && <span className="block text-[10px] text-amber-300 font-mono">🛡️ incl. Auto-Brim +1.5g</span>}
                     </span>
                     <span className="font-mono text-zinc-100 font-semibold shrink-0">
-                      ₹{supportsEnabled ? calcSupportCost.toFixed(2) : '0.00'}
+                      ₹{supportBrimCharged ? calcSupportCost.toFixed(2) : '0.00'}
                     </span>
                   </div>
 
@@ -5724,7 +5584,7 @@ export default function StlViewer() {
                   {/* Print Labor & Finishing */}
                   <div className="flex items-center justify-between gap-3 py-2 border-b border-white/5">
                     <span className="text-zinc-300 text-xs">
-                      Print Labor &amp; QA ({(calcPartWeight + (supportsEnabled ? calcSupportBrimWeight : 0)).toFixed(1)}g @ ₹1.00/g)
+                      Print Labor &amp; QA ({(calcPartWeight + (supportBrimCharged ? calcSupportBrimWeight : 0)).toFixed(1)}g @ ₹1.00/g)
                     </span>
                     <span className="font-mono text-zinc-100 font-semibold shrink-0">
                       ₹{calcMakingCost.toFixed(2)}
@@ -5763,6 +5623,19 @@ export default function StlViewer() {
                       </span>
                       <span className="font-mono font-semibold shrink-0">
                         +₹{floorAdjustment.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Rupee Rounding Credit (checkout rounds to the nearest rupee) */}
+                  {roundingAdjustment > 0 && floorAdjustment === 0 && (
+                    <div className="flex items-center justify-between gap-3 py-2 border-b border-white/5 text-[#00FF66]">
+                      <span className="text-xs flex items-center gap-1 font-medium">
+                        <span>₹</span>
+                        <span>Round-off Adjustment (nearest ₹)</span>
+                      </span>
+                      <span className="font-mono font-semibold shrink-0">
+                        -₹{roundingAdjustment.toFixed(2)}
                       </span>
                     </div>
                   )}

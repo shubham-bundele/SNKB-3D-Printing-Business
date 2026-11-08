@@ -18,10 +18,11 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { fitGeometryToA1MiniBed, fitMultiPartGeometriesToA1MiniBed } from '../utils/fitGeometryToBed.js';
+import { frameObjectToCamera, STUDIO_VIEW_DIRECTION } from '../utils/cameraFraming.js';
 import { analyzeMeshShells, buildShellExplodableGroup, updateExplodableGroup } from '../utils/explodableAssembly.js';
-import { createFDMLayerBumpTexture, createPEIBumpTexture } from '../utils/physicalAssemblies.js';
+import { createFDMLayerBumpTexture, createPEIBumpTexture } from '../utils/fdmTextures.js';
+import { loadStudioEnvironment } from '../utils/studioEnvironment.js';
 import { resolvePixelRatio, attachTouchScrollLock } from '../utils/viewerTouchControls.js';
 
 const stlLoader = new STLLoader();
@@ -144,16 +145,11 @@ export class HeroStageRenderer {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // RoomEnvironment for realistic specular reflections and bevel highlights
+    // Real studio HDRI (RoomEnvironment remains the instant procedural baseline)
     try {
-      const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
-      pmremGenerator.compileEquirectangularShader();
-      const envScene = new RoomEnvironment();
-      this.scene.environment = pmremGenerator.fromScene(envScene, 0.04).texture;
-      envScene.dispose();
-      pmremGenerator.dispose();
+      loadStudioEnvironment(this.renderer, this.scene);
     } catch (envErr) {
-      console.warn('[HeroStage] Could not initialize RoomEnvironment:', envErr);
+      console.warn('[HeroStage] Could not initialize studio environment:', envErr);
     }
 
     // WebGL Context Loss Recovery
@@ -541,11 +537,18 @@ export class HeroStageRenderer {
       },
       undefined,
       (err) => {
-        console.warn(`[HeroStage] Error loading STL from ${url}, rendering procedural fallback mesh:`, err);
-        const fallbackGeo = new THREE.TorusKnotGeometry(26, 7.5, 128, 32, 2, 3);
-        fitGeometryToA1MiniBed(fallbackGeo, 110, false);
-        geometryCache.set(url, fallbackGeo);
-        this.applySingleGeometry(fallbackGeo, `${displayName || 'Precision Target'} (Calibration Mesh)`, allowUnlock);
+        // Never substitute a fake mesh: the genuine STL is the only thing this
+        // stage is allowed to render. Surface the failure instead.
+        console.warn(`[HeroStage] Could not load STL from ${url}:`, err);
+        if (this.modelNameBadge) {
+          this.modelNameBadge.textContent = `${displayName || 'Model'} — 3D preview unavailable`;
+        }
+        if (this.triCountBadge) {
+          this.triCountBadge.textContent = '0 Tris';
+        }
+        if (this.loadingOverlay) {
+          this.loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
+        }
       }
     );
   }
@@ -709,11 +712,26 @@ export class HeroStageRenderer {
       this.modelNameBadge.textContent = displayName || 'Custom 3D Model';
     }
 
-    // 4. Smooth camera focus
-    const sphere = primaryGeo.boundingSphere;
-    if (sphere) {
-      const targetY = Math.max(sphere.center.y, 25);
-      this.controls.target.set(0, targetY, 0);
+    // 4. Dynamic camera pass (shared cameraFraming engine): exact THREE.Box3
+    // center + camera.near/far derived from the model's own size + full-sphere
+    // fit distance, keeping the hero's fixed studio bearing intact.
+    try {
+      const currentDir = new THREE.Vector3()
+        .subVectors(this.camera.position, this.controls.target)
+        .normalize();
+      if (!currentDir.lengthSq()) currentDir.copy(STUDIO_VIEW_DIRECTION);
+      frameObjectToCamera(this.camera, this.controls, this.modelGroup, {
+        coverage: 0.74,
+        direction: currentDir,
+        minRadius: 25,
+      });
+    } catch (frameErr) {
+      console.warn('[HeroPrintStage] Dynamic framing failed, keeping default view:', frameErr);
+      const sphere = primaryGeo.boundingSphere;
+      if (sphere) {
+        const targetY = Math.max(sphere.center.y, 25);
+        this.controls.target.set(0, targetY, 0);
+      }
     }
 
     // Hide loader

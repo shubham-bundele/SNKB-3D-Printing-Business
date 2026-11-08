@@ -85,9 +85,13 @@ test('Catalog 3D Turntable Renderer: components exist and enforce solid physical
   // Verify OrbitControls zoom protection
   assert.ok(jsContent.includes('enableZoom = false'), 'OrbitControls must disable zoom to protect scrolling');
 
-  // Verify turntable rotation and centering
+  // Verify turntable rotation and centering — geometry is bed-fit and centered
+  // via fitGeometryToA1MiniBed (strict 180x180x180mm containment engine).
   assert.ok(jsContent.includes('turntableGroup.rotation.y'), 'Must smoothly rotate turntable');
-  assert.ok(jsContent.includes('computeBoundingBox'), 'Must compute bounding box');
+  assert.ok(
+    jsContent.includes('fitGeometryToA1MiniBed') && jsContent.includes('fitMultiPartGeometriesToA1MiniBed'),
+    'Must compute bounding box + center geometry via the A1 Mini bed-fit engine'
+  );
   assert.ok(jsContent.includes('GridHelper'), 'Must include 180x180mm subtle grid plate');
 });
 
@@ -106,8 +110,12 @@ test('Frontend Storefront: dist/index.html includes 3D cards, swatches, and Load
   assert.ok(html.includes('data-color="#1E2229"'), 'HTML must include Matte Charcoal swatch');
   assert.ok(html.includes('data-color="#00E5FF"'), 'HTML must include Glacier Cyan swatch');
 
-  // Verify Explode Parts button for multi-part models
-  assert.ok(html.includes('Explode Parts'), 'HTML must include Explode Parts button');
+  // Verify Explode Parts toggle affordance on every card — the honest catalog
+  // (Phase 30) ships single-piece real customer designs, so the label renders
+  // the disabled "Cannot Explode" state; genuine multi-part SKUs re-enable it.
+  assert.ok(html.includes('explode-parts-btn'), 'HTML must include the explode-parts toggle');
+  assert.ok(html.includes('Cannot Explode'), 'Single-piece cards must state honestly that they cannot explode');
+  assert.ok(html.includes('lock-badge'), 'Lock badge copy must be passed through for tooltip');
 
   // Verify Load in 3D Slicer buttons
   assert.ok(html.includes('Load in 3D Slicer →'), 'HTML must feature Load in 3D Slicer button');
